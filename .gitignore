@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Environment
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Model files
+*.pkl
+
+# Logs
+*.log
+
+# Build
+dist/
+build/
+
+# VS Code
+.vscode/
