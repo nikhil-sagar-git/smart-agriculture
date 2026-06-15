@@ -48,7 +48,7 @@ export default function Crop() {
       setLoading(true);
 
       const response = await fetch(
-        "https://smart-agriculture-python.onrender.com/predict",
+        "https://smart-agriculture-python3.onrender.com/predict",
         {
           method: "POST",
 

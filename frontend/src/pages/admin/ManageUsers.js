@@ -10,7 +10,7 @@ export default function ManageUsers() {
 
     try {
 
-      const res = await fetch("http://localhost:4000/getdata");
+      const res = await fetch("https://smart-agriculture-node.onrender.com/getdata");
 
       const data = await res.json();
 

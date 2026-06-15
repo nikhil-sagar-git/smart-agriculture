@@ -68,7 +68,7 @@ export default function Fertilizer() {
 
       const res = await fetch(
 
-        "https://smart-agriculture-python.onrender.com/predictfertilizer",
+        "https://smart-agriculture-python3.onrender.com/predictfertilizer",
 
         {
 
