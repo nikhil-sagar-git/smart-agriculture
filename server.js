@@ -2,23 +2,40 @@ const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2");
 const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 // DB
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "12958nikhil@",
-  database: "agripro123"
+// const db = mysql.createConnection({
+//   host: "localhost",
+//   user: "root",
+//   password: "12958nikhil@",
+//   database: "agripro123"
+// });
+
+;
+
+const db=mysql.createConnection({
+ host:process.env.DB_HOST,
+ user:process.env.DB_USER,
+ password:process.env.DB_PASSWORD,
+ database:process.env.DB_NAME,
+ port:process.env.DB_PORT
 });
 
-db.connect(err => {
-  if (err) console.log(err);
-  else console.log("MySQL Connected");
+db.connect((err)=>{
+ if(err){
+   console.log("DB Error:",err);
+ }else{
+   console.log("AWS RDS Connected");
+ }
 });
+
+
 
 // 📦 TEMP OTP STORE (no DB)
 const otpStore = {};
@@ -173,6 +190,8 @@ app.delete("/delete/:id", (req, res) => {
   );
 });
 
-app.listen(4000, () =>
-  console.log("Server running on http://localhost:4000")
-);
+const PORT = process.env.PORT || 4000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
