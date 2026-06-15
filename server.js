@@ -44,8 +44,8 @@ const otpStore = {};
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "rasalanikhil@gmail.com",
-    pass: "vevttpjvxtxlrzaf"
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -61,7 +61,7 @@ app.post("/sendotp", (req, res) => {
   };
 
   transporter.sendMail({
-    from: "rasalanikhil@gmail.com",
+    from: process.env.EMAIL_USER,
     to: email,
     subject: "OTP Verification",
     html: `<h2>Your OTP is: ${otp}</h2>`
