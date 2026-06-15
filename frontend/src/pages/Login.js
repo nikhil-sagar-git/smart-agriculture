@@ -15,7 +15,7 @@ export default function Login() {
       navigate("/admin");
     }
 
-    const res = await fetch("http://localhost:4000/login", {
+    const res = await fetch("https://smart-agriculture-node.onrender.com/login", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(form)

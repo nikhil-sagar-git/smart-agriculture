@@ -5,7 +5,7 @@ export default function Profile() {
 
   async function getData() {
     try {
-      const res = await fetch("http://localhost:4000/getdata", {
+      const res = await fetch("https://smart-agriculture-node.onrender.com/getdata", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

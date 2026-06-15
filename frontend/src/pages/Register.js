@@ -7,7 +7,7 @@ export default function Register() {
   const [timer, setTimer] = useState(0);
   const [message, setMessage] = useState("");
 
-  const backendURL = "http://localhost:4000";
+  const backendURL = "https://smart-agriculture-node.onrender.com";
   const navigate = useNavigate();
 
   useEffect(() => {
