@@ -113,33 +113,57 @@ export default function Register() {
 
   // ================= SEND OTP =================
   const sendOTP = async () => {
-    if (!form.email) {
-      setMessage("❌ Please enter email first");
+  if (!form.email) {
+    setMessage("Enter email first");
+    return;
+  }
+
+  try {
+    setMessage("Sending OTP...");
+
+    const controller = new AbortController();
+
+    setTimeout(() => {
+      controller.abort();
+    }, 10000);
+
+    const res = await fetch(
+      `${backendURL}/sendotp`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: form.email
+        }),
+        signal: controller.signal
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setMessage(data.message);
       return;
     }
 
-    try {
-      const res = await fetch(`${backendURL}/sendotp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email })
-      });
+    setTimer(60);
+    setMessage("OTP sent");
 
-      const data = await res.json();
+  } catch (err) {
 
-      if (!res.ok) {
-        setMessage(data.message || "❌ OTP failed to send");
-        return;
-      }
-
-      setTimer(60);
-      setMessage(data.message);
-
-    } catch (err) {
-      setMessage("❌ Server error while sending OTP");
+    if (err.name === "AbortError") {
+      setMessage(
+        "Request timed out"
+      );
+    } else {
+      setMessage(
+        "Server error"
+      );
     }
-  };
-
+  }
+};
   // ================= VERIFY + REGISTER =================
   const verifyAndRegister = async (e) => {
     e.preventDefault();

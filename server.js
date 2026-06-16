@@ -53,49 +53,78 @@ const transporter = nodemailer.createTransport({
 });
 
 // ================= SEND OTP =================
-// ================= SEND OTP =================
+
+// app.post("/sendotp", async (req, res) => {
+//   try {
+//     const { email } = req.body;
+
+//     if (!email) {
+//       return res.status(400).json({
+//         message: "Email is required"
+//       });
+//     }
+
+//     const otp = Math.floor(
+//       1000 + Math.random() * 9000
+//     ).toString();
+
+//     otpStore[email] = {
+//       otp,
+//       expires: Date.now() + 60000
+//     };
+
+//     const info = await transporter.sendMail({
+//       from: process.env.EMAIL_USER,
+//       to: email,
+//       subject: "OTP Verification",
+//       html: `
+//         <h2>Your OTP is: ${otp}</h2>
+//         <p>This OTP expires in 60 seconds.</p>
+//       `
+//     });
+
+//     console.log("EMAIL SENT:", info.response);
+
+//     return res.json({
+//       message: "OTP sent successfully"
+//     });
+
+//   } catch (err) {
+
+//     console.log("EMAIL ERROR:", err);
+
+//     return res.status(500).json({
+//       message: "Email sending failed",
+//       error: err.message
+//     });
+//   }
+// });
+
+
 app.post("/sendotp", async (req, res) => {
   try {
     const { email } = req.body;
 
+    console.log("OTP REQUEST:", email);
+
     if (!email) {
       return res.status(400).json({
-        message: "Email is required"
+        message: "Email required"
       });
     }
 
-    const otp = Math.floor(
-      1000 + Math.random() * 9000
-    ).toString();
-
-    otpStore[email] = {
-      otp,
-      expires: Date.now() + 60000
-    };
-
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "OTP Verification",
-      html: `
-        <h2>Your OTP is: ${otp}</h2>
-        <p>This OTP expires in 60 seconds.</p>
-      `
-    });
-
-    console.log("EMAIL SENT:", info.response);
+    const otp = "1234";
 
     return res.json({
-      message: "OTP sent successfully"
+      message: "Backend reached",
+      otp
     });
 
   } catch (err) {
-
-    console.log("EMAIL ERROR:", err);
+    console.log(err);
 
     return res.status(500).json({
-      message: "Email sending failed",
-      error: err.message
+      message: "Server error"
     });
   }
 });
