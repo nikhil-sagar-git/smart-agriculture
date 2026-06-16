@@ -53,24 +53,51 @@ const transporter = nodemailer.createTransport({
 });
 
 // ================= SEND OTP =================
-app.post("/sendotp", (req, res) => {
-  const { email } = req.body;
+// ================= SEND OTP =================
+app.post("/sendotp", async (req, res) => {
+  try {
+    const { email } = req.body;
 
-  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required"
+      });
+    }
 
-  otpStore[email] = {
-    otp,
-    expires: Date.now() + 60000 // 1 min
-  };
+    const otp = Math.floor(
+      1000 + Math.random() * 9000
+    ).toString();
 
-  transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "OTP Verification",
-    html: `<h2>Your OTP is: ${otp}</h2>`
-  });
+    otpStore[email] = {
+      otp,
+      expires: Date.now() + 60000
+    };
 
-  res.json({ message: "OTP sent" });
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "OTP Verification",
+      html: `
+        <h2>Your OTP is: ${otp}</h2>
+        <p>This OTP expires in 60 seconds.</p>
+      `
+    });
+
+    console.log("EMAIL SENT:", info.response);
+
+    return res.json({
+      message: "OTP sent successfully"
+    });
+
+  } catch (err) {
+
+    console.log("EMAIL ERROR:", err);
+
+    return res.status(500).json({
+      message: "Email sending failed",
+      error: err.message
+    });
+  }
 });
 
 // ================= VERIFY OTP =================
