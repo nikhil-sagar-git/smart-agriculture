@@ -29,7 +29,7 @@ const db = mysql.createConnection({
 
 db.connect((err) => {
   if (err) {
-    console.error("❌ DB Connection Failed:", err.message);
+    console.error("DB Connection Failed:", err.message);
 
     // IMPORTANT: STOP SERVER if DB fails
     process.exit(1);
