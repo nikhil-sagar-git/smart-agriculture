@@ -133,7 +133,7 @@ export default function Register() {
       }
 
       setTimer(60);
-      setMessage("✅ OTP sent successfully");
+      setMessage(data.message);
 
     } catch (err) {
       setMessage("❌ Server error while sending OTP");
