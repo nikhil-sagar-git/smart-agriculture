@@ -333,43 +333,12 @@ transporter.verify((err, success) => {
 
 // ================= SEND OTP =================
 
-app.post("/sendotp", async (req, res) => {
-  try {
-    const { email } = req.body;
+app.post("/sendotp", (req, res) => {
+  console.log("OTP route reached");
 
-    console.log("REQUEST RECEIVED");
-
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
-
-    console.log("OTP:", otp);
-
-    console.log("Before sendMail");
-
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "OTP Verification",
-      html: `<h2>${otp}</h2>`
-    });
-
-    console.log("After sendMail");
-
-    console.log(info);
-
-    res.json({
-      message: "OTP Sent"
-    });
-
-  } catch (err) {
-
-    console.log("ERROR");
-
-    console.log(err);
-
-    res.status(500).json({
-      message: err.message
-    });
-  }
+  res.json({
+    message: "Backend working"
+  });
 });
 
 // ================= VERIFY OTP =================
