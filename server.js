@@ -337,46 +337,37 @@ app.post("/sendotp", async (req, res) => {
   try {
     const { email } = req.body;
 
-    console.log("OTP REQUEST:", email);
-
-    if (!email) {
-      return res.status(400).json({
-        message: "Email required",
-      });
-    }
+    console.log("REQUEST RECEIVED");
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-    console.log("Generated OTP:", otp);
+    console.log("OTP:", otp);
 
-    otpStore[email] = {
-      otp,
-      expires: Date.now() + 60000,
-    };
+    console.log("Before sendMail");
 
     const info = await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
       subject: "OTP Verification",
-      html: `
-        <h2>Your OTP is ${otp}</h2>
-        <p>This OTP expires in 60 seconds.</p>
-      `,
+      html: `<h2>${otp}</h2>`
     });
 
-    console.log("EMAIL SENT:", info.response);
+    console.log("After sendMail");
+
+    console.log(info);
 
     res.json({
-      success: true,
-      message: "OTP sent successfully",
+      message: "OTP Sent"
     });
 
   } catch (err) {
-    console.log("EMAIL ERROR:", err);
+
+    console.log("ERROR");
+
+    console.log(err);
 
     res.status(500).json({
-      success: false,
-      message: err.message,
+      message: err.message
     });
   }
 });
