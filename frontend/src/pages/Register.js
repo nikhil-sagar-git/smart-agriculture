@@ -90,17 +90,19 @@ export default function Register() {
   const [form, setForm] = useState({
     username: "",
     email: "",
-    password: ""
+    password: "",
   });
 
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(0);
   const [message, setMessage] = useState("");
+  const [sendingOTP, setSendingOTP] = useState(false);
+  const [registering, setRegistering] = useState(false);
 
   const backendURL = "https://smart-agriculture-node.onrender.com";
   const navigate = useNavigate();
 
-  // ================= TIMER FIX =================
+  // Countdown Timer
   useEffect(() => {
     if (timer <= 0) return;
 
@@ -111,105 +113,133 @@ export default function Register() {
     return () => clearInterval(interval);
   }, [timer]);
 
-  // ================= SEND OTP =================
+  // Send OTP
   const sendOTP = async () => {
-  if (!form.email) {
-    setMessage("Enter email first");
-    return;
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  try {
+    if (!emailRegex.test(form.email)) {
+      setMessage("Please enter a valid email.");
+      return;
+    }
+
+    setSendingOTP(true);
     setMessage("Sending OTP...");
 
     const controller = new AbortController();
 
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       controller.abort();
     }, 10000);
 
-    const res = await fetch(
-      `${backendURL}/sendotp`,
-      {
+    try {
+      const res = await fetch(`${backendURL}/sendotp`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: form.email
+          email: form.email,
         }),
-        signal: controller.signal
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data.message || "Failed to send OTP.");
+        return;
       }
-    );
 
-    const data = await res.json();
+      setTimer(60);
+      setMessage("✅ OTP sent successfully.");
 
-    if (!res.ok) {
-      setMessage(data.message);
-      return;
+    } catch (err) {
+      if (err.name === "AbortError") {
+        setMessage("Request timed out.");
+      } else {
+        setMessage("Server error.");
+      }
+    } finally {
+      clearTimeout(timeout);
+      setSendingOTP(false);
     }
+  };
 
-    setTimer(60);
-    setMessage("OTP sent");
-
-  } catch (err) {
-
-    if (err.name === "AbortError") {
-      setMessage(
-        "Request timed out"
-      );
-    } else {
-      setMessage(
-        "Server error"
-      );
-    }
-  }
-};
-  // ================= VERIFY + REGISTER =================
+  // Verify OTP & Register
   const verifyAndRegister = async (e) => {
     e.preventDefault();
 
-    if (!otp) {
-      setMessage("❌ Enter OTP");
+    if (!form.username.trim()) {
+      setMessage("Username is required.");
       return;
     }
 
+    if (!form.email.trim()) {
+      setMessage("Email is required.");
+      return;
+    }
+
+    if (otp.length !== 6) {
+      setMessage("Enter a valid 6-digit OTP.");
+      return;
+    }
+
+    if (form.password.length < 6) {
+      setMessage("Password must be at least 6 characters.");
+      return;
+    }
+
+    setRegistering(true);
+
     try {
-      // STEP 1: VERIFY OTP
+      // Verify OTP
       const verify = await fetch(`${backendURL}/verify`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           email: form.email,
-          otp
-        })
+          otp,
+        }),
       });
 
       const verifyData = await verify.json();
 
       if (!verify.ok) {
-        setMessage(verifyData.message || "❌ Invalid OTP");
+        setMessage(verifyData.message || "Invalid OTP.");
         return;
       }
 
-      // STEP 2: REGISTER USER
-      const reg = await fetch(`${backendURL}/register`, {
+      // Register User
+      const register = await fetch(`${backendURL}/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
       });
 
-      const regData = await reg.json();
+      const registerData = await register.json();
 
-      if (!reg.ok) {
-        setMessage(regData.message || "❌ Registration failed");
+      if (!register.ok) {
+        setMessage(registerData.message || "Registration failed.");
         return;
       }
 
-      setMessage("✅ Registered successfully");
-      navigate("/login");
+      setMessage("✅ Registration successful.");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
 
     } catch (err) {
-      setMessage("❌ Server error");
+      console.error(err);
+      setMessage("Server error.");
+    } finally {
+      setRegistering(false);
     }
   };
 
@@ -219,53 +249,67 @@ export default function Register() {
 
         <h2>Register</h2>
 
-        {/* USERNAME */}
         <input
+          type="text"
           placeholder="Username"
+          value={form.username}
           onChange={(e) =>
             setForm({ ...form, username: e.target.value })
           }
         />
 
-        {/* EMAIL */}
         <input
+          type="email"
           placeholder="Email"
+          value={form.email}
           onChange={(e) =>
             setForm({ ...form, email: e.target.value })
           }
         />
 
-        {/* SEND OTP BUTTON */}
         <button
           type="button"
           onClick={sendOTP}
-          disabled={timer > 0}
+          disabled={sendingOTP || timer > 0 || !form.email}
         >
-          {timer > 0 ? `Wait ${timer}s` : "Send OTP"}
+          {sendingOTP
+            ? "Sending..."
+            : timer > 0
+            ? `Wait ${timer}s`
+            : "Send OTP"}
         </button>
 
-        {/* OTP INPUT */}
         <input
+          type="text"
           placeholder="Enter OTP"
+          value={otp}
+          maxLength={6}
           onChange={(e) => setOtp(e.target.value)}
         />
 
-        {/* PASSWORD */}
         <input
           type="password"
           placeholder="Password"
+          value={form.password}
           onChange={(e) =>
             setForm({ ...form, password: e.target.value })
           }
         />
 
-        {/* REGISTER BUTTON */}
-        <button type="submit">Register</button>
+        <button
+          type="submit"
+          disabled={registering}
+        >
+          {registering ? "Registering..." : "Register"}
+        </button>
 
-        {/* MESSAGE */}
-        <p>{message}</p>
+        {message && <p>{message}</p>}
 
-        <Link to="/login">Login</Link>
+        <p>
+          Already have an account?{" "}
+          <Link to="/login">Login</Link>
+        </p>
+
       </form>
     </div>
   );
