@@ -325,7 +325,8 @@ const transporter = nodemailer.createTransport({
 
 transporter.verify((err, success) => {
   if (err) {
-    console.log("MAIL ERROR:", err);
+    console.log("VERIFY ERROR:");
+    console.log(err);
   } else {
     console.log("MAIL READY");
   }
@@ -333,12 +334,44 @@ transporter.verify((err, success) => {
 
 // ================= SEND OTP =================
 
-app.post("/sendotp", (req, res) => {
-  console.log("OTP route reached");
+app.post("/sendotp", async (req, res) => {
 
-  res.json({
-    message: "Backend working"
-  });
+    const { email } = req.body;
+
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+    console.log("Generated OTP:", otp);
+
+    try {
+
+        console.log("Before sendMail");
+
+        const info = await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "OTP Verification",
+            html: `<h2>${otp}</h2>`
+        });
+
+        console.log("After sendMail");
+
+        console.log(info);
+
+        res.json({
+            message: "OTP sent"
+        });
+
+    } catch (err) {
+
+        console.log("MAIL ERROR");
+
+        console.log(err);
+
+        res.status(500).json({
+            message: err.message
+        });
+    }
+
 });
 
 // ================= VERIFY OTP =================
