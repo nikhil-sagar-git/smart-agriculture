@@ -306,15 +306,14 @@ db.connect((err) => {
     console.log("DB Error:", err);
     return;
   }
-
   console.log("✅ AWS RDS Connected");
 });
 
 // ================= OTP STORE =================
 
-const savedOTPS = {};
+const otpStore = {};
 
-// ================= NODEMAILER =================
+// ================= MAIL =================
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -334,51 +333,52 @@ transporter.verify((err, success) => {
 
 // ================= SEND OTP =================
 
-app.post("/sendotp", (req, res) => {
-  const { email } = req.body;
+app.post("/sendotp", async (req, res) => {
+  try {
+    const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json({
-      message: "Email is required",
-    });
-  }
+    console.log("OTP REQUEST:", email);
 
-  // Generate 4-digit OTP
-  const otp = Math.floor(1000 + Math.random() * 9000).toString();
-
-  console.log("Generated OTP:", otp);
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "OTP Verification",
-    html: `
-      <h2>Your OTP is : ${otp}</h2>
-      <p>This OTP is valid for 60 seconds.</p>
-    `,
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-
-      return res.status(500).json({
-        message: "Failed to send OTP",
+    if (!email) {
+      return res.status(400).json({
+        message: "Email required",
       });
     }
 
-    savedOTPS[email] = otp;
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-    setTimeout(() => {
-      delete savedOTPS[email];
-    }, 60000);
+    console.log("Generated OTP:", otp);
 
-    console.log("Email Sent:", info.response);
+    otpStore[email] = {
+      otp,
+      expires: Date.now() + 60000,
+    };
+
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "OTP Verification",
+      html: `
+        <h2>Your OTP is ${otp}</h2>
+        <p>This OTP expires in 60 seconds.</p>
+      `,
+    });
+
+    console.log("EMAIL SENT:", info.response);
 
     res.json({
+      success: true,
       message: "OTP sent successfully",
     });
-  });
+
+  } catch (err) {
+    console.log("EMAIL ERROR:", err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 });
 
 // ================= VERIFY OTP =================
@@ -386,16 +386,33 @@ app.post("/sendotp", (req, res) => {
 app.post("/verify", (req, res) => {
   const { email, otp } = req.body;
 
-  if (savedOTPS[email] && savedOTPS[email] === otp) {
-    delete savedOTPS[email];
+  const record = otpStore[email];
 
-    return res.json({
-      message: "OTP verified successfully",
+  if (!record) {
+    return res.status(400).json({
+      message: "OTP not found",
     });
   }
 
-  res.status(400).json({
-    message: "Invalid or expired OTP",
+  if (Date.now() > record.expires) {
+    delete otpStore[email];
+
+    return res.status(400).json({
+      message: "OTP expired",
+    });
+  }
+
+  if (record.otp !== otp) {
+    return res.status(400).json({
+      message: "Invalid OTP",
+    });
+  }
+
+  delete otpStore[email];
+
+  res.json({
+    success: true,
+    message: "OTP verified",
   });
 });
 
@@ -431,6 +448,7 @@ app.post("/register", (req, res) => {
           }
 
           res.json({
+            success: true,
             message: "Registration successful",
           });
         }
@@ -467,6 +485,7 @@ app.post("/login", (req, res) => {
       }
 
       res.json({
+        success: true,
         message: "Login successful",
         user: result[0],
       });
@@ -493,7 +512,7 @@ app.get("/getdata", (req, res) => {
   );
 });
 
-// ================= DELETE USER =================
+// ================= DELETE =================
 
 app.delete("/delete/:id", (req, res) => {
   db.query(
@@ -513,7 +532,7 @@ app.delete("/delete/:id", (req, res) => {
   );
 });
 
-// ================= START SERVER =================
+// ================= SERVER =================
 
 const PORT = process.env.PORT || 4000;
 

@@ -90,7 +90,7 @@ export default function Register() {
   const [form, setForm] = useState({
     username: "",
     email: "",
-    password: "",
+    password: ""
   });
 
   const [otp, setOtp] = useState("");
@@ -113,81 +113,70 @@ export default function Register() {
     return () => clearInterval(interval);
   }, [timer]);
 
-  // Send OTP
+  // ================= SEND OTP =================
+
   const sendOTP = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(form.email)) {
-      setMessage("Please enter a valid email.");
+      setMessage("Enter a valid email.");
       return;
     }
 
     setSendingOTP(true);
     setMessage("Sending OTP...");
 
-    const controller = new AbortController();
-
-    const timeout = setTimeout(() => {
-      controller.abort();
-    }, 10000);
-
     try {
       const res = await fetch(`${backendURL}/sendotp`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          email: form.email,
-        }),
-        signal: controller.signal,
+          email: form.email
+        })
       });
-
-      clearTimeout(timeout);
 
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.message || "Failed to send OTP.");
+        setMessage(data.message || "Failed to send OTP");
         return;
       }
 
       setTimer(60);
-      setMessage("✅ OTP sent successfully.");
+      setMessage("OTP sent successfully");
 
     } catch (err) {
-      if (err.name === "AbortError") {
-        setMessage("Request timed out.");
-      } else {
-        setMessage("Server error.");
-      }
+      console.log(err);
+      setMessage("Server error");
     } finally {
-      clearTimeout(timeout);
       setSendingOTP(false);
     }
   };
 
-  // Verify OTP & Register
+  // ================= REGISTER =================
+
   const verifyAndRegister = async (e) => {
     e.preventDefault();
 
-    if (!form.username.trim()) {
-      setMessage("Username is required.");
+    if (!form.username) {
+      setMessage("Enter username");
       return;
     }
 
-    if (!form.email.trim()) {
-      setMessage("Email is required.");
+    if (!form.email) {
+      setMessage("Enter email");
       return;
     }
 
-    if (otp.length !== 6) {
-      setMessage("Enter a valid 6-digit OTP.");
+    if (!otp) {
+      setMessage("Enter OTP");
       return;
     }
 
-    if (form.password.length < 6) {
-      setMessage("Password must be at least 6 characters.");
+    if (!form.password) {
+      setMessage("Enter password");
       return;
     }
 
@@ -198,46 +187,46 @@ export default function Register() {
       const verify = await fetch(`${backendURL}/verify`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           email: form.email,
-          otp,
-        }),
+          otp
+        })
       });
 
       const verifyData = await verify.json();
 
       if (!verify.ok) {
-        setMessage(verifyData.message || "Invalid OTP.");
+        setMessage(verifyData.message);
         return;
       }
 
-      // Register User
+      // Register
       const register = await fetch(`${backendURL}/register`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(form)
       });
 
       const registerData = await register.json();
 
       if (!register.ok) {
-        setMessage(registerData.message || "Registration failed.");
+        setMessage(registerData.message);
         return;
       }
 
-      setMessage("✅ Registration successful.");
+      setMessage("Registration Successful");
 
       setTimeout(() => {
         navigate("/login");
       }, 1500);
 
     } catch (err) {
-      console.error(err);
-      setMessage("Server error.");
+      console.log(err);
+      setMessage("Server Error");
     } finally {
       setRegistering(false);
     }
@@ -245,7 +234,7 @@ export default function Register() {
 
   return (
     <div className="container">
-      <form onSubmit={verifyAndRegister} className="card">
+      <form className="card" onSubmit={verifyAndRegister}>
 
         <h2>Register</h2>
 
@@ -270,7 +259,7 @@ export default function Register() {
         <button
           type="button"
           onClick={sendOTP}
-          disabled={sendingOTP || timer > 0 || !form.email}
+          disabled={sendingOTP || timer > 0}
         >
           {sendingOTP
             ? "Sending..."
@@ -283,7 +272,6 @@ export default function Register() {
           type="text"
           placeholder="Enter OTP"
           value={otp}
-          maxLength={6}
           onChange={(e) => setOtp(e.target.value)}
         />
 
@@ -303,7 +291,9 @@ export default function Register() {
           {registering ? "Registering..." : "Register"}
         </button>
 
-        {message && <p>{message}</p>}
+        {message && (
+          <p>{message}</p>
+        )}
 
         <p>
           Already have an account?{" "}
