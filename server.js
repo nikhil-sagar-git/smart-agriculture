@@ -281,109 +281,99 @@
 
 
 const express = require("express");
-const cors = require("cors");
-const mysql = require("mysql2");
 const nodemailer = require("nodemailer");
+const dns = require("dns");
 require("dotenv").config();
 
 const app = express();
 
-app.use(cors());
 app.use(express.json());
 
-// ================= DATABASE =================
-
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306,
-});
-
-db.connect((err) => {
-  if (err) {
-    console.log("DB Error:", err);
-    return;
-  }
-  console.log("✅ AWS RDS Connected");
-});
-
-// ================= OTP STORE =================
-
-const otpStore = {};
-
-// ================= MAIL =================
+// Force IPv4
+dns.setDefaultResultOrder("ipv4first");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  requireTLS: true,
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    pass: process.env.EMAIL_PASS
   },
+  family: 4,
+  connectionTimeout: 20000,
+  greetingTimeout: 20000,
+  socketTimeout: 20000
 });
 
-transporter.verify((err, success) => {
+transporter.verify((err) => {
   if (err) {
-    console.log("VERIFY ERROR:");
-    console.log(err);
+    console.log("MAIL ERROR:", err);
   } else {
     console.log("MAIL READY");
   }
 });
 
-// ================= SEND OTP =================
+const otpStore = {};
 
 app.post("/sendotp", async (req, res) => {
-
+  try {
     const { email } = req.body;
 
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required"
+      });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    otpStore[email] = {
+      otp,
+      expires: Date.now() + 60000
+    };
 
     console.log("Generated OTP:", otp);
 
-    try {
+    const info = await transporter.sendMail({
+      from: `"Smart Agriculture" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "OTP Verification",
+      html: `
+        <h2>Your OTP is ${otp}</h2>
+        <p>This OTP expires in 60 seconds.</p>
+      `
+    });
 
-        console.log("Before sendMail");
+    console.log("EMAIL SENT:", info.response);
 
-        const info = await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "OTP Verification",
-            html: `<h2>${otp}</h2>`
-        });
+    res.json({
+      message: "OTP sent successfully"
+    });
 
-        console.log("After sendMail");
+  } catch (err) {
 
-        console.log(info);
+    console.log("SEND MAIL ERROR");
 
-        res.json({
-            message: "OTP sent"
-        });
+    console.log(err);
 
-    } catch (err) {
+    res.status(500).json({
+      message: err.message
+    });
 
-        console.log("MAIL ERROR");
-
-        console.log(err);
-
-        res.status(500).json({
-            message: err.message
-        });
-    }
-
+  }
 });
 
-// ================= VERIFY OTP =================
-
 app.post("/verify", (req, res) => {
+
   const { email, otp } = req.body;
 
   const record = otpStore[email];
 
   if (!record) {
     return res.status(400).json({
-      message: "OTP not found",
+      message: "No OTP found"
     });
   }
 
@@ -391,144 +381,24 @@ app.post("/verify", (req, res) => {
     delete otpStore[email];
 
     return res.status(400).json({
-      message: "OTP expired",
+      message: "OTP expired"
     });
   }
 
   if (record.otp !== otp) {
     return res.status(400).json({
-      message: "Invalid OTP",
+      message: "Invalid OTP"
     });
   }
 
   delete otpStore[email];
 
   res.json({
-    success: true,
-    message: "OTP verified",
+    message: "OTP verified"
   });
+
 });
 
-// ================= REGISTER =================
-
-app.post("/register", (req, res) => {
-  const { username, email, password } = req.body;
-
-  db.query(
-    "SELECT * FROM users WHERE email=?",
-    [email],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Database error",
-        });
-      }
-
-      if (result.length > 0) {
-        return res.status(400).json({
-          message: "Email already exists",
-        });
-      }
-
-      db.query(
-        "INSERT INTO users(username,email,password) VALUES(?,?,?)",
-        [username, email, password],
-        (err) => {
-          if (err) {
-            return res.status(500).json({
-              message: "Database error",
-            });
-          }
-
-          res.json({
-            success: true,
-            message: "Registration successful",
-          });
-        }
-      );
-    }
-  );
-});
-
-// ================= LOGIN =================
-
-app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-
-  db.query(
-    "SELECT * FROM users WHERE email=?",
-    [email],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Database error",
-        });
-      }
-
-      if (result.length === 0) {
-        return res.status(400).json({
-          message: "User not found",
-        });
-      }
-
-      if (result[0].password !== password) {
-        return res.status(400).json({
-          message: "Wrong password",
-        });
-      }
-
-      res.json({
-        success: true,
-        message: "Login successful",
-        user: result[0],
-      });
-    }
-  );
-});
-
-// ================= GET USERS =================
-
-app.get("/getdata", (req, res) => {
-  db.query(
-    "SELECT id,username,email,created_at FROM users",
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Database error",
-        });
-      }
-
-      res.json({
-        users: result,
-      });
-    }
-  );
-});
-
-// ================= DELETE =================
-
-app.delete("/delete/:id", (req, res) => {
-  db.query(
-    "DELETE FROM users WHERE id=?",
-    [req.params.id],
-    (err) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Delete failed",
-        });
-      }
-
-      res.json({
-        message: "Deleted successfully",
-      });
-    }
-  );
-});
-
-// ================= SERVER =================
-
-const PORT = process.env.PORT || 4000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(process.env.PORT || 4000, () => {
+  console.log("Server Running");
 });
