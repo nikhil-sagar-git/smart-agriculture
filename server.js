@@ -1,3 +1,285 @@
+// const express = require("express");
+// const cors = require("cors");
+// const mysql = require("mysql2");
+// const nodemailer = require("nodemailer");
+// require("dotenv").config();
+
+// const app = express();
+// app.use(cors());
+// app.use(express.json());
+
+
+// // DB
+// // const db = mysql.createConnection({
+// //   host: "localhost",
+// //   user: "root",
+// //   password: "12958nikhil@",
+// //   database: "agripro123"
+// // });
+
+// ;
+
+// const db = mysql.createConnection({
+//   host: process.env.DB_HOST,
+//   user: process.env.DB_USER,
+//   password: process.env.DB_PASSWORD,
+//   database: process.env.DB_NAME,
+//   port: process.env.DB_PORT || 3306
+// });
+
+// db.connect((err) => {
+//   if (err) {
+//     console.error("DB Connection Failed:", err.message);
+
+//     // IMPORTANT: STOP SERVER if DB fails
+//     process.exit(1);
+//   }
+
+//   console.log("✅ AWS RDS Connected");
+// });
+
+
+
+// // 📦 TEMP OTP STORE (no DB)
+// const otpStore = {};
+
+// // 📧 Mail setup
+// // const transporter = nodemailer.createTransport({
+// //   service: "gmail",
+// //   auth: {
+// //     user: process.env.EMAIL_USER,
+// //     pass: process.env.EMAIL_PASS
+// //   }
+// // });
+
+
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS
+//   },
+
+//   connectionTimeout: 10000,
+//   socketTimeout: 10000
+// });
+
+// transporter.verify((err) => {
+//   if (err) {
+//     console.log("MAIL ERROR:", err.message);
+//   } else {
+//     console.log("MAIL READY");
+//   }
+// });
+
+// // ================= SEND OTP =================
+
+// // app.post("/sendotp", async (req, res) => {
+// //   try {
+// //     const { email } = req.body;
+
+// //     if (!email) {
+// //       return res.status(400).json({
+// //         message: "Email is required"
+// //       });
+// //     }
+
+// //     const otp = Math.floor(
+// //       1000 + Math.random() * 9000
+// //     ).toString();
+
+// //     otpStore[email] = {
+// //       otp,
+// //       expires: Date.now() + 60000
+// //     };
+
+// //     const info = await transporter.sendMail({
+// //       from: process.env.EMAIL_USER,
+// //       to: email,
+// //       subject: "OTP Verification",
+// //       html: `
+// //         <h2>Your OTP is: ${otp}</h2>
+// //         <p>This OTP expires in 60 seconds.</p>
+// //       `
+// //     });
+
+// //     console.log("EMAIL SENT:", info.response);
+
+// //     return res.json({
+// //       message: "OTP sent successfully"
+// //     });
+
+// //   } catch (err) {
+
+// //     console.log("EMAIL ERROR:", err);
+
+// //     return res.status(500).json({
+// //       message: "Email sending failed",
+// //       error: err.message
+// //     });
+// //   }
+// // });
+
+
+// app.post("/sendotp", async (req, res) => {
+//   try {
+//     const { email } = req.body;
+
+//     console.log("OTP REQUEST:", email);
+
+//     if (!email) {
+//       return res.status(400).json({
+//         message: "Email required"
+//       });
+//     }
+
+//     const otp = "1234";
+
+//     return res.json({
+//       message: "Backend reached",
+//       otp
+//     });
+
+//   } catch (err) {
+//     console.log(err);
+
+//     return res.status(500).json({
+//       message: "Server error"
+//     });
+//   }
+// });
+
+// // ================= VERIFY OTP =================
+// app.post("/verify", (req, res) => {
+//   const { email, otp } = req.body;
+
+//   const record = otpStore[email];
+
+//   if (!record) {
+//     return res.status(400).json({ message: "No OTP found" });
+//   }
+
+//   if (Date.now() > record.expires) {
+//     return res.status(400).json({ message: "OTP expired" });
+//   }
+
+//   if (record.otp !== otp) {
+//     return res.status(400).json({ message: "Invalid OTP" });
+//   }
+
+//   // ✅ Verified → delete OTP
+//   delete otpStore[email];
+
+//   res.json({ message: "OTP verified" });
+// });
+
+// // ================= REGISTER =================
+// app.post("/register", (req, res) => {
+//   const { username, email, password } = req.body;
+
+//   db.query(
+//     "SELECT * FROM users WHERE email = ?",
+//     [email],
+//     (err, result) => {
+//       if (result.length > 0) {
+//         return res.status(400).json({ message: "Email exists" });
+//       }
+
+//       db.query(
+//         "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+//         [username, email, password],
+//         (err) => {
+//           if (err) return res.status(500).json({ message: "DB error" });
+
+//           res.json({ message: "Registered successfully" });
+//         }
+//       );
+//     }
+//   );
+// });
+
+// // ================= LOGIN =================
+// app.post("/login", (req, res) => {
+//   const { email, password } = req.body;
+
+//   db.query(
+//     "SELECT * FROM users WHERE email = ?",
+//     [email],
+//     (err, result) => {
+//       if (result.length === 0) {
+//         return res.status(400).json({ message: "User not found" });
+//       }
+
+//       const user = result[0];
+
+//       if (user.password !== password) {
+//         return res.status(400).json({ message: "Wrong password" });
+//       }
+
+//       res.json({
+//         message: "Login success",
+//         user: user
+//       });
+//     }
+//   );
+// });
+
+
+// // ================= GET ALL USERS =================
+// app.get("/getdata", (req, res) => {
+
+//   db.query(
+//     "SELECT id, username, email, created_at FROM users",
+//     (err, result) => {
+
+//       if (err) {
+//         return res.status(500).json({
+//           message: "DB error"
+//         });
+//       }
+
+//       res.json({
+//         users: result
+//       });
+//     }
+//   );
+// });
+
+
+// // ================= DELETE USER =================
+// app.delete("/delete/:id", (req, res) => {
+
+//   const id = req.params.id;
+
+//   db.query(
+//     "DELETE FROM users WHERE id=?",
+//     [id],
+//     (err) => {
+
+//       if (err) {
+//         return res.status(500).json({
+//           message: "Delete failed"
+//         });
+//       }
+
+//       res.json({
+//         message: "User deleted"
+//       });
+//     }
+//   );
+// });
+
+// const PORT = process.env.PORT || 4000;
+
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
+
+
+
+
+
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2");
@@ -5,69 +287,46 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-
-// DB
-// const db = mysql.createConnection({
-//   host: "localhost",
-//   user: "root",
-//   password: "12958nikhil@",
-//   database: "agripro123"
-// });
-
-;
+// ================= DATABASE =================
 
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306
+  port: process.env.DB_PORT || 3306,
 });
 
 db.connect((err) => {
   if (err) {
-    console.error("DB Connection Failed:", err.message);
-
-    // IMPORTANT: STOP SERVER if DB fails
-    process.exit(1);
+    console.log("DB Error:", err);
+    return;
   }
 
   console.log("✅ AWS RDS Connected");
 });
 
+// ================= OTP STORE =================
 
+const savedOTPS = {};
 
-// 📦 TEMP OTP STORE (no DB)
-const otpStore = {};
-
-// 📧 Mail setup
-// const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS
-//   }
-// });
-
+// ================= NODEMAILER =================
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
-
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    pass: process.env.EMAIL_PASS,
   },
-
-  connectionTimeout: 10000,
-  socketTimeout: 10000
 });
 
-transporter.verify((err) => {
+transporter.verify((err, success) => {
   if (err) {
-    console.log("MAIL ERROR:", err.message);
+    console.log("MAIL ERROR:", err);
   } else {
     console.log("MAIL READY");
   }
@@ -75,124 +334,105 @@ transporter.verify((err) => {
 
 // ================= SEND OTP =================
 
-// app.post("/sendotp", async (req, res) => {
-//   try {
-//     const { email } = req.body;
+app.post("/sendotp", (req, res) => {
+  const { email } = req.body;
 
-//     if (!email) {
-//       return res.status(400).json({
-//         message: "Email is required"
-//       });
-//     }
+  if (!email) {
+    return res.status(400).json({
+      message: "Email is required",
+    });
+  }
 
-//     const otp = Math.floor(
-//       1000 + Math.random() * 9000
-//     ).toString();
+  // Generate 4-digit OTP
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-//     otpStore[email] = {
-//       otp,
-//       expires: Date.now() + 60000
-//     };
+  console.log("Generated OTP:", otp);
 
-//     const info = await transporter.sendMail({
-//       from: process.env.EMAIL_USER,
-//       to: email,
-//       subject: "OTP Verification",
-//       html: `
-//         <h2>Your OTP is: ${otp}</h2>
-//         <p>This OTP expires in 60 seconds.</p>
-//       `
-//     });
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "OTP Verification",
+    html: `
+      <h2>Your OTP is : ${otp}</h2>
+      <p>This OTP is valid for 60 seconds.</p>
+    `,
+  };
 
-//     console.log("EMAIL SENT:", info.response);
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
 
-//     return res.json({
-//       message: "OTP sent successfully"
-//     });
-
-//   } catch (err) {
-
-//     console.log("EMAIL ERROR:", err);
-
-//     return res.status(500).json({
-//       message: "Email sending failed",
-//       error: err.message
-//     });
-//   }
-// });
-
-
-app.post("/sendotp", async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    console.log("OTP REQUEST:", email);
-
-    if (!email) {
-      return res.status(400).json({
-        message: "Email required"
+      return res.status(500).json({
+        message: "Failed to send OTP",
       });
     }
 
-    const otp = "1234";
+    savedOTPS[email] = otp;
 
-    return res.json({
-      message: "Backend reached",
-      otp
+    setTimeout(() => {
+      delete savedOTPS[email];
+    }, 60000);
+
+    console.log("Email Sent:", info.response);
+
+    res.json({
+      message: "OTP sent successfully",
     });
-
-  } catch (err) {
-    console.log(err);
-
-    return res.status(500).json({
-      message: "Server error"
-    });
-  }
+  });
 });
 
 // ================= VERIFY OTP =================
+
 app.post("/verify", (req, res) => {
   const { email, otp } = req.body;
 
-  const record = otpStore[email];
+  if (savedOTPS[email] && savedOTPS[email] === otp) {
+    delete savedOTPS[email];
 
-  if (!record) {
-    return res.status(400).json({ message: "No OTP found" });
+    return res.json({
+      message: "OTP verified successfully",
+    });
   }
 
-  if (Date.now() > record.expires) {
-    return res.status(400).json({ message: "OTP expired" });
-  }
-
-  if (record.otp !== otp) {
-    return res.status(400).json({ message: "Invalid OTP" });
-  }
-
-  // ✅ Verified → delete OTP
-  delete otpStore[email];
-
-  res.json({ message: "OTP verified" });
+  res.status(400).json({
+    message: "Invalid or expired OTP",
+  });
 });
 
 // ================= REGISTER =================
+
 app.post("/register", (req, res) => {
   const { username, email, password } = req.body;
 
   db.query(
-    "SELECT * FROM users WHERE email = ?",
+    "SELECT * FROM users WHERE email=?",
     [email],
     (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          message: "Database error",
+        });
+      }
+
       if (result.length > 0) {
-        return res.status(400).json({ message: "Email exists" });
+        return res.status(400).json({
+          message: "Email already exists",
+        });
       }
 
       db.query(
-        "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+        "INSERT INTO users(username,email,password) VALUES(?,?,?)",
         [username, email, password],
         (err) => {
-          if (err) return res.status(500).json({ message: "DB error" });
+          if (err) {
+            return res.status(500).json({
+              message: "Database error",
+            });
+          }
 
-          res.json({ message: "Registered successfully" });
+          res.json({
+            message: "Registration successful",
+          });
         }
       );
     }
@@ -200,75 +440,80 @@ app.post("/register", (req, res) => {
 });
 
 // ================= LOGIN =================
+
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
   db.query(
-    "SELECT * FROM users WHERE email = ?",
+    "SELECT * FROM users WHERE email=?",
     [email],
     (err, result) => {
-      if (result.length === 0) {
-        return res.status(400).json({ message: "User not found" });
-      }
-
-      const user = result[0];
-
-      if (user.password !== password) {
-        return res.status(400).json({ message: "Wrong password" });
-      }
-
-      res.json({
-        message: "Login success",
-        user: user
-      });
-    }
-  );
-});
-
-
-// ================= GET ALL USERS =================
-app.get("/getdata", (req, res) => {
-
-  db.query(
-    "SELECT id, username, email, created_at FROM users",
-    (err, result) => {
-
       if (err) {
         return res.status(500).json({
-          message: "DB error"
+          message: "Database error",
+        });
+      }
+
+      if (result.length === 0) {
+        return res.status(400).json({
+          message: "User not found",
+        });
+      }
+
+      if (result[0].password !== password) {
+        return res.status(400).json({
+          message: "Wrong password",
         });
       }
 
       res.json({
-        users: result
+        message: "Login successful",
+        user: result[0],
       });
     }
   );
 });
 
+// ================= GET USERS =================
+
+app.get("/getdata", (req, res) => {
+  db.query(
+    "SELECT id,username,email,created_at FROM users",
+    (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          message: "Database error",
+        });
+      }
+
+      res.json({
+        users: result,
+      });
+    }
+  );
+});
 
 // ================= DELETE USER =================
+
 app.delete("/delete/:id", (req, res) => {
-
-  const id = req.params.id;
-
   db.query(
     "DELETE FROM users WHERE id=?",
-    [id],
+    [req.params.id],
     (err) => {
-
       if (err) {
         return res.status(500).json({
-          message: "Delete failed"
+          message: "Delete failed",
         });
       }
 
       res.json({
-        message: "User deleted"
+        message: "Deleted successfully",
       });
     }
   );
 });
+
+// ================= START SERVER =================
 
 const PORT = process.env.PORT || 4000;
 
