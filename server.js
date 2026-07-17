@@ -349,15 +349,22 @@ app.post("/sendotp", async (req, res) => {
 
     console.log("Before sendMail");
 
-    const info = await transporter.sendMail({
-  from: '"Smart Agriculture" <rasalanikhil@gmail.com>',
-  to: email,
-  subject: "OTP Verification",
-  html: `
-    <h2>Your OTP is ${otp}</h2>
-    <p>This OTP is valid for 1 minute.</p>
-  `
-});
+    otpStore[email] = {
+  otp,
+  expires: Date.now() + 60000
+};
+
+    const info = await Promise.race([
+  transporter.sendMail({
+    from: '"Smart Agriculture" <rasalanikhil@gmail.com>',
+    to: email,
+    subject: "OTP Verification",
+    html: `<h2>Your OTP is ${otp}</h2>`
+  }),
+  new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("SMTP Timeout")), 15000)
+  )
+]);
 
     console.log("After sendMail");
 
