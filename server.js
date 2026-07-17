@@ -277,9 +277,6 @@
 // });
 
 
-
-
-
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2");
@@ -291,7 +288,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ================= DATABASE =================
+/* ===========================
+   DATABASE CONNECTION
+=========================== */
 
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -303,27 +302,38 @@ const db = mysql.createConnection({
 
 db.connect((err) => {
   if (err) {
-    console.log("DB ERROR:", err);
+    console.log("DB CONNECTION ERROR");
+    console.log(err);
     process.exit(1);
   }
 
   console.log("✅ AWS RDS Connected");
 });
 
-// ================= OTP STORE =================
+/* ===========================
+   OTP STORE
+=========================== */
 
 const otpStore = {};
 
-// ================= BREVO MAIL =================
+/* ===========================
+   BREVO SMTP
+=========================== */
 
 const transporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
   port: 587,
   secure: false,
+  requireTLS: true,
+
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  }
+  },
+
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000
 });
 
 transporter.verify((err) => {
@@ -335,56 +345,89 @@ transporter.verify((err) => {
   }
 });
 
-// ================= SEND OTP =================
+/* ===========================
+   SEND OTP
+=========================== */
 
 app.post("/sendotp", async (req, res) => {
+
   try {
+
     const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required"
+      });
+    }
 
     console.log("OTP Request:", email);
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp =
+      Math.floor(100000 + Math.random() * 900000).toString();
 
     console.log("OTP Generated:", otp);
 
-    console.log("Before sendMail");
+    const info = await transporter.sendMail({
 
-    otpStore[email] = {
-  otp,
-  expires: Date.now() + 60000
-};
+      from: `"Smart Agriculture" <${process.env.SENDER_EMAIL}>`,
 
-    const info = await Promise.race([
-  transporter.sendMail({
-    from: '"Smart Agriculture" <rasalanikhil@gmail.com>',
-    to: email,
-    subject: "OTP Verification",
-    html: `<h2>Your OTP is ${otp}</h2>`
-  }),
-  new Promise((_, reject) =>
-    setTimeout(() => reject(new Error("SMTP Timeout")), 15000)
-  )
-]);
+      to: email,
 
-    console.log("After sendMail");
+      subject: "OTP Verification",
 
-    console.log(info);
+      html: `
+        <div style="font-family:Arial;padding:20px">
+          <h2>OTP Verification</h2>
 
-    res.json({
-      message: "OTP sent"
+          <h1>${otp}</h1>
+
+          <p>
+            This OTP is valid for
+            <b>1 minute</b>.
+          </p>
+        </div>
+      `
     });
 
-  } catch (err) {
+    console.log("EMAIL SENT");
+
+    console.log(info.response);
+
+    otpStore[email] = {
+
+      otp,
+
+      expires: Date.now() + 60000
+
+    };
+
+    res.json({
+
+      message: "OTP sent successfully"
+
+    });
+
+  }
+
+  catch (err) {
+
     console.log("SENDMAIL ERROR");
+
     console.log(err);
 
     res.status(500).json({
-      message: err.message
-    });
-  }
-});
 
-// ================= VERIFY =================
+      message: err.message
+
+    });
+
+  }
+
+});
+/* ===========================
+   VERIFY OTP
+=========================== */
 
 app.post("/verify", (req, res) => {
 
@@ -393,11 +436,9 @@ app.post("/verify", (req, res) => {
   const data = otpStore[email];
 
   if (!data) {
-
     return res.status(400).json({
       message: "No OTP found"
     });
-
   }
 
   if (Date.now() > data.expires) {
@@ -421,29 +462,37 @@ app.post("/verify", (req, res) => {
   delete otpStore[email];
 
   res.json({
-    message: "OTP verified"
+    message: "OTP verified successfully"
   });
 
 });
 
-// ================= REGISTER =================
+
+/* ===========================
+   REGISTER
+=========================== */
 
 app.post("/register", (req, res) => {
 
   const { username, email, password } = req.body;
 
-  db.query(
-    "SELECT * FROM users WHERE email=?",
-    [email],
+  if (!username || !email || !password) {
+    return res.status(400).json({
+      message: "All fields are required"
+    });
+  }
 
+  db.query(
+    "SELECT * FROM users WHERE email = ?",
+    [email],
     (err, result) => {
 
       if (err) {
+        console.log(err);
 
         return res.status(500).json({
           message: "Database Error"
         });
-
       }
 
       if (result.length > 0) {
@@ -463,11 +512,11 @@ app.post("/register", (req, res) => {
         (err) => {
 
           if (err) {
+            console.log(err);
 
             return res.status(500).json({
-              message: "Database Error"
+              message: "Registration failed"
             });
-
           }
 
           res.json({
@@ -484,15 +533,26 @@ app.post("/register", (req, res) => {
 
 });
 
-// ================= LOGIN =================
+
+/* ===========================
+   LOGIN
+=========================== */
 
 app.post("/login", (req, res) => {
 
   const { email, password } = req.body;
 
+  if (!email || !password) {
+
+    return res.status(400).json({
+      message: "Email and Password are required"
+    });
+
+  }
+
   db.query(
 
-    "SELECT * FROM users WHERE email=?",
+    "SELECT * FROM users WHERE email = ?",
 
     [email],
 
@@ -500,13 +560,15 @@ app.post("/login", (req, res) => {
 
       if (err) {
 
+        console.log(err);
+
         return res.status(500).json({
           message: "Database Error"
         });
 
       }
 
-      if (result.length == 0) {
+      if (result.length === 0) {
 
         return res.status(400).json({
           message: "User not found"
@@ -514,7 +576,9 @@ app.post("/login", (req, res) => {
 
       }
 
-      if (result[0].password !== password) {
+      const user = result[0];
+
+      if (user.password !== password) {
 
         return res.status(400).json({
           message: "Wrong password"
@@ -526,7 +590,12 @@ app.post("/login", (req, res) => {
 
         message: "Login Successful",
 
-        user: result[0]
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          created_at: user.created_at
+        }
 
       });
 
@@ -535,18 +604,21 @@ app.post("/login", (req, res) => {
   );
 
 });
-
-// ================= GET USERS =================
+/* ===========================
+   GET ALL USERS
+=========================== */
 
 app.get("/getdata", (req, res) => {
 
   db.query(
 
-    "SELECT id,username,email,created_at FROM users",
+    "SELECT id, username, email, created_at FROM users",
 
     (err, result) => {
 
       if (err) {
+
+        console.log(err);
 
         return res.status(500).json({
           message: "Database Error"
@@ -555,9 +627,7 @@ app.get("/getdata", (req, res) => {
       }
 
       res.json({
-
         users: result
-
       });
 
     }
@@ -566,19 +636,26 @@ app.get("/getdata", (req, res) => {
 
 });
 
-// ================= DELETE =================
+
+/* ===========================
+   DELETE USER
+=========================== */
 
 app.delete("/delete/:id", (req, res) => {
 
+  const id = req.params.id;
+
   db.query(
 
-    "DELETE FROM users WHERE id=?",
+    "DELETE FROM users WHERE id = ?",
 
-    [req.params.id],
+    [id],
 
     (err) => {
 
       if (err) {
+
+        console.log(err);
 
         return res.status(500).json({
           message: "Delete Failed"
@@ -587,7 +664,7 @@ app.delete("/delete/:id", (req, res) => {
       }
 
       res.json({
-        message: "Deleted"
+        message: "User Deleted Successfully"
       });
 
     }
@@ -596,10 +673,28 @@ app.delete("/delete/:id", (req, res) => {
 
 });
 
+
+/* ===========================
+   DEFAULT ROUTE
+=========================== */
+
+app.get("/", (req, res) => {
+
+  res.send("Smart Agriculture Backend Running");
+
+});
+
+
+/* ===========================
+   START SERVER
+=========================== */
+
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
 
-  console.log("Server running on port", PORT);
+  console.log(`🚀 Server running on port ${PORT}`);
 
 });
+
+

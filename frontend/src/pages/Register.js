@@ -84,9 +84,10 @@
 
 
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
+
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -99,11 +100,13 @@ export default function Register() {
   const [sendingOTP, setSendingOTP] = useState(false);
   const [registering, setRegistering] = useState(false);
 
-  const backendURL = "https://smart-agriculture-node.onrender.com";
   const navigate = useNavigate();
 
-  // Countdown Timer
+  const backendURL =
+    "https://smart-agriculture-node.onrender.com";
+
   useEffect(() => {
+
     if (timer <= 0) return;
 
     const interval = setInterval(() => {
@@ -111,15 +114,15 @@ export default function Register() {
     }, 1000);
 
     return () => clearInterval(interval);
+
   }, [timer]);
 
   // ================= SEND OTP =================
 
   const sendOTP = async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(form.email)) {
-      setMessage("Enter a valid email.");
+    if (!form.email) {
+      setMessage("Enter email");
       return;
     }
 
@@ -127,20 +130,24 @@ export default function Register() {
     setMessage("Sending OTP...");
 
     try {
-      const res = await fetch(`${backendURL}/sendotp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: form.email
-        })
-      });
 
-      const data = await res.json();
+      const response = await fetch(
+        `${backendURL}/sendotp`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: form.email
+          })
+        }
+      );
 
-      if (!res.ok) {
-        setMessage(data.message || "Failed to send OTP");
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message);
         return;
       }
 
@@ -148,93 +155,112 @@ export default function Register() {
       setMessage("OTP sent successfully");
 
     } catch (err) {
+
       console.log(err);
-      setMessage("Server error");
+
+      setMessage("Server Error");
+
     } finally {
+
       setSendingOTP(false);
+
     }
+
   };
 
   // ================= REGISTER =================
 
-  const verifyAndRegister = async (e) => {
+  const register = async (e) => {
+
     e.preventDefault();
 
-    if (!form.username) {
-      setMessage("Enter username");
-      return;
-    }
+    if (
+      !form.username ||
+      !form.email ||
+      !otp ||
+      !form.password
+    ) {
 
-    if (!form.email) {
-      setMessage("Enter email");
-      return;
-    }
+      setMessage("Fill all fields");
 
-    if (!otp) {
-      setMessage("Enter OTP");
       return;
-    }
 
-    if (!form.password) {
-      setMessage("Enter password");
-      return;
     }
 
     setRegistering(true);
 
     try {
-      // Verify OTP
-      const verify = await fetch(`${backendURL}/verify`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: form.email,
-          otp
-        })
-      });
+
+      const verify = await fetch(
+        `${backendURL}/verify`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: form.email,
+            otp
+          })
+        }
+      );
 
       const verifyData = await verify.json();
 
       if (!verify.ok) {
+
         setMessage(verifyData.message);
+
         return;
+
       }
 
-      // Register
-      const register = await fetch(`${backendURL}/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(form)
-      });
+      const response = await fetch(
+        `${backendURL}/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(form)
+        }
+      );
 
-      const registerData = await register.json();
+      const data = await response.json();
 
-      if (!register.ok) {
-        setMessage(registerData.message);
+      if (!response.ok) {
+
+        setMessage(data.message);
+
         return;
+
       }
 
       setMessage("Registration Successful");
 
       setTimeout(() => {
+
         navigate("/login");
+
       }, 1500);
 
     } catch (err) {
-      console.log(err);
-      setMessage("Server Error");
-    } finally {
-      setRegistering(false);
-    }
-  };
 
-  return (
+      console.log(err);
+
+      setMessage("Server Error");
+
+    } finally {
+
+      setRegistering(false);
+
+    }
+
+  };
+    return (
     <div className="container">
-      <form className="card" onSubmit={verifyAndRegister}>
+
+      <form className="card" onSubmit={register}>
 
         <h2>Register</h2>
 
@@ -243,7 +269,10 @@ export default function Register() {
           placeholder="Username"
           value={form.username}
           onChange={(e) =>
-            setForm({ ...form, username: e.target.value })
+            setForm({
+              ...form,
+              username: e.target.value
+            })
           }
         />
 
@@ -252,7 +281,10 @@ export default function Register() {
           placeholder="Email"
           value={form.email}
           onChange={(e) =>
-            setForm({ ...form, email: e.target.value })
+            setForm({
+              ...form,
+              email: e.target.value
+            })
           }
         />
 
@@ -272,6 +304,7 @@ export default function Register() {
           type="text"
           placeholder="Enter OTP"
           value={otp}
+          maxLength={6}
           onChange={(e) => setOtp(e.target.value)}
         />
 
@@ -280,7 +313,10 @@ export default function Register() {
           placeholder="Password"
           value={form.password}
           onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
+            setForm({
+              ...form,
+              password: e.target.value
+            })
           }
         />
 
@@ -288,19 +324,35 @@ export default function Register() {
           type="submit"
           disabled={registering}
         >
-          {registering ? "Registering..." : "Register"}
+          {registering
+            ? "Registering..."
+            : "Register"}
         </button>
 
         {message && (
-          <p>{message}</p>
+          <p
+            style={{
+              color:
+                message.toLowerCase().includes("successful")
+                  ? "green"
+                  : "red",
+              marginTop: "10px"
+            }}
+          >
+            {message}
+          </p>
         )}
 
-        <p>
+        <p style={{ marginTop: "15px" }}>
           Already have an account?{" "}
-          <Link to="/login">Login</Link>
+          <Link to="/login">
+            Login
+          </Link>
         </p>
 
       </form>
+
     </div>
   );
+
 }
