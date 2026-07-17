@@ -396,7 +396,7 @@ app.post("/sendotp", async (req, res) => {
 
       return res.status(500).json({
 
-        message: data.message || "Email sending failed"
+        message: data.message || "Email  sending failed"
 
       });
 
