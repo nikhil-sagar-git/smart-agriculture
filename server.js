@@ -350,11 +350,14 @@ app.post("/sendotp", async (req, res) => {
     console.log("Before sendMail");
 
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "OTP Verification",
-      html: `<h2>Your OTP: ${otp}</h2>`
-    });
+  from: '"Smart Agriculture" <rasalanikhil@gmail.com>',
+  to: email,
+  subject: "OTP Verification",
+  html: `
+    <h2>Your OTP is ${otp}</h2>
+    <p>This OTP is valid for 1 minute.</p>
+  `
+});
 
     console.log("After sendMail");
 
