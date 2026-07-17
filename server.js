@@ -321,8 +321,8 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: process.env.BREVO_USER,
-    pass: process.env.BREVO_PASS
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -361,7 +361,7 @@ app.post("/sendotp", async (req, res) => {
     };
 
     await transporter.sendMail({
-      from: process.env.BREVO_USER,
+      from: process.env.EMAIL_USER,
       to: email,
       subject: "OTP Verification",
 
