@@ -280,7 +280,6 @@
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2");
-const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const app = express();
@@ -288,9 +287,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* ===========================
-   DATABASE CONNECTION
-=========================== */
+// ================= DATABASE =================
 
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -301,47 +298,31 @@ const db = mysql.createConnection({
 });
 
 db.connect((err) => {
+
   if (err) {
-    console.log("DB CONNECTION ERROR");
+    console.log("DB ERROR");
     console.log(err);
     process.exit(1);
   }
 
   console.log("✅ AWS RDS Connected");
+
 });
 
-/* ===========================
-   OTP STORE
-=========================== */
+// ================= OTP STORE =================
 
 const otpStore = {};
 
-/* ===========================
-   BREVO SMTP
-=========================== */
+// ================= BREVO CONFIG =================
 
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+const BREVO_URL = "https://api.brevo.com/v3/smtp/email";
+
+// ================= HOME =================
+
+app.get("/", (req, res) => {
+  res.send("Smart Agriculture Backend Running");
 });
-
-transporter.verify((err) => {
-  if (err) {
-    console.log("MAIL ERROR");
-    console.log(err);
-  } else {
-    console.log("✅ MAIL READY");
-  }
-});
-
-/* ===========================
-   SEND OTP
-=========================== */
+// ================= SEND OTP =================
 
 app.post("/sendotp", async (req, res) => {
 
@@ -357,36 +338,69 @@ app.post("/sendotp", async (req, res) => {
 
     console.log("OTP Request:", email);
 
-    const otp =
-      Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
 
     console.log("OTP Generated:", otp);
 
-    const info = await transporter.sendMail({
+    const response = await fetch(BREVO_URL, {
 
-      from: `"Smart Agriculture" <${process.env.SENDER_EMAIL}>`,
+      method: "POST",
 
-      to: email,
+      headers: {
 
-      subject: "OTP Verification",
+        "accept": "application/json",
 
-      html: `
-        <div style="font-family:Arial;padding:20px">
+        "content-type": "application/json",
+
+        "api-key": process.env.BREVO_API_KEY
+
+      },
+
+      body: JSON.stringify({
+
+        sender: {
+          name: "Smart Agriculture",
+          email: process.env.SENDER_EMAIL
+        },
+
+        to: [
+          {
+            email: email
+          }
+        ],
+
+        subject: "OTP Verification",
+
+        htmlContent: `
           <h2>OTP Verification</h2>
 
           <h1>${otp}</h1>
 
           <p>
-            This OTP is valid for
+            Your OTP is valid for
             <b>1 minute</b>.
           </p>
-        </div>
-      `
+        `
+
+      })
+
     });
 
-    console.log("EMAIL SENT");
+    const data = await response.json();
 
-    console.log(info.response);
+    console.log(data);
+
+    if (!response.ok) {
+
+      return res.status(500).json({
+
+        message: data.message || "Email sending failed"
+
+      });
+
+    }
 
     otpStore[email] = {
 
@@ -406,8 +420,6 @@ app.post("/sendotp", async (req, res) => {
 
   catch (err) {
 
-    console.log("SENDMAIL ERROR");
-
     console.log(err);
 
     res.status(500).json({
@@ -419,9 +431,7 @@ app.post("/sendotp", async (req, res) => {
   }
 
 });
-/* ===========================
-   VERIFY OTP
-=========================== */
+// ================= VERIFY OTP =================
 
 app.post("/verify", (req, res) => {
 
@@ -436,21 +446,17 @@ app.post("/verify", (req, res) => {
   }
 
   if (Date.now() > data.expires) {
-
     delete otpStore[email];
 
     return res.status(400).json({
       message: "OTP expired"
     });
-
   }
 
   if (data.otp !== otp) {
-
     return res.status(400).json({
       message: "Invalid OTP"
     });
-
   }
 
   delete otpStore[email];
@@ -462,9 +468,7 @@ app.post("/verify", (req, res) => {
 });
 
 
-/* ===========================
-   REGISTER
-=========================== */
+// ================= REGISTER =================
 
 app.post("/register", (req, res) => {
 
@@ -477,7 +481,7 @@ app.post("/register", (req, res) => {
   }
 
   db.query(
-    "SELECT * FROM users WHERE email = ?",
+    "SELECT * FROM users WHERE email=?",
     [email],
     (err, result) => {
 
@@ -490,26 +494,21 @@ app.post("/register", (req, res) => {
       }
 
       if (result.length > 0) {
-
         return res.status(400).json({
           message: "Email already exists"
         });
-
       }
 
       db.query(
-
         "INSERT INTO users(username,email,password) VALUES(?,?,?)",
-
         [username, email, password],
-
         (err) => {
 
           if (err) {
             console.log(err);
 
             return res.status(500).json({
-              message: "Registration failed"
+              message: "Registration Failed"
             });
           }
 
@@ -518,106 +517,81 @@ app.post("/register", (req, res) => {
           });
 
         }
-
       );
 
     }
-
   );
 
 });
 
 
-/* ===========================
-   LOGIN
-=========================== */
+// ================= LOGIN =================
 
 app.post("/login", (req, res) => {
 
   const { email, password } = req.body;
 
   if (!email || !password) {
-
     return res.status(400).json({
       message: "Email and Password are required"
     });
-
   }
 
   db.query(
-
-    "SELECT * FROM users WHERE email = ?",
-
+    "SELECT * FROM users WHERE email=?",
     [email],
-
     (err, result) => {
 
       if (err) {
-
         console.log(err);
 
         return res.status(500).json({
           message: "Database Error"
         });
-
       }
 
       if (result.length === 0) {
-
         return res.status(400).json({
           message: "User not found"
         });
-
       }
 
       const user = result[0];
 
       if (user.password !== password) {
-
         return res.status(400).json({
-          message: "Wrong password"
+          message: "Wrong Password"
         });
-
       }
 
       res.json({
-
         message: "Login Successful",
-
         user: {
           id: user.id,
           username: user.username,
           email: user.email,
           created_at: user.created_at
         }
-
       });
 
     }
-
   );
 
 });
-/* ===========================
-   GET ALL USERS
-=========================== */
+// ================= GET ALL USERS =================
 
 app.get("/getdata", (req, res) => {
 
   db.query(
-
     "SELECT id, username, email, created_at FROM users",
-
     (err, result) => {
 
       if (err) {
-
         console.log(err);
 
         return res.status(500).json({
           message: "Database Error"
         });
-
       }
 
       res.json({
@@ -625,36 +599,28 @@ app.get("/getdata", (req, res) => {
       });
 
     }
-
   );
 
 });
 
 
-/* ===========================
-   DELETE USER
-=========================== */
+// ================= DELETE USER =================
 
 app.delete("/delete/:id", (req, res) => {
 
   const id = req.params.id;
 
   db.query(
-
-    "DELETE FROM users WHERE id = ?",
-
+    "DELETE FROM users WHERE id=?",
     [id],
-
     (err) => {
 
       if (err) {
-
         console.log(err);
 
         return res.status(500).json({
           message: "Delete Failed"
         });
-
       }
 
       res.json({
@@ -662,26 +628,12 @@ app.delete("/delete/:id", (req, res) => {
       });
 
     }
-
   );
 
 });
 
 
-/* ===========================
-   DEFAULT ROUTE
-=========================== */
-
-app.get("/", (req, res) => {
-
-  res.send("Smart Agriculture Backend Running");
-
-});
-
-
-/* ===========================
-   START SERVER
-=========================== */
+// ================= SERVER =================
 
 const PORT = process.env.PORT || 4000;
 
@@ -690,5 +642,3 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 
 });
-
-
