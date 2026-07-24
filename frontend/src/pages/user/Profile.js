@@ -3,26 +3,26 @@ export default function Profile() {
   const username = localStorage.getItem("username");
   const email = localStorage.getItem("useremail");
 
-  async function getData() {
-    try {
-      const res = await fetch("https://smart-agriculture-node.onrender.com/getdata", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email })
-      });
+  // async function getData() {
+  //   try {
+  //     const res = await fetch("https://smart-agriculture-node.onrender.com/getdata", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json"
+  //       },
+  //       body: JSON.stringify({ email })
+  //     });
 
-      const data = await res.json();
+  //     const data = await res.json();
 
-      console.log(data);
-      alert(data.message || "Data received");
+  //     console.log(data);
+  //     alert(data.message || "Data received");
 
-    } catch (err) {
-      console.log(err);
-      alert("Server error");
-    }
-  }
+  //   } catch (err) {
+  //     console.log(err);
+  //     alert("Server error");
+  //   }
+  // }
 
   return (
     <div>
@@ -44,9 +44,9 @@ export default function Profile() {
             <p>{email}</p>
           </div>
 
-          <button className="btn" onClick={getData}>
+          {/* <button className="btn" onClick={getData}>
             Get Data
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
