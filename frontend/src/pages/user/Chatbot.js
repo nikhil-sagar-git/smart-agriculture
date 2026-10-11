@@ -282,32 +282,31 @@ export default function Chatbot() {
           </div>
         )}
 
-        {/* =====================================
-            INPUT FORM
-        ===================================== */}
+        
 
-        <form
-          className="chatbot-input-area"
-          onSubmit={handleSend}
-        >
-          <input
-            type="text"
-            value={input}
-            placeholder="Ask your agriculture question..."
-            onChange={(e) =>
-              setInput(e.target.value)
-            }
-            disabled={loading}
-          />
+<form
+  className="chatbot-input-area"
+  onSubmit={handleSend}
+>
+  <input
+    className="chatbot-text-input"
+    type="text"
+    value={input}
+    placeholder="Ask your agriculture question..."
+    onChange={(e) => setInput(e.target.value)}
+    disabled={loading}
+    autoComplete="off"
+  />
 
-          <button
-            type="submit"
-            className="chatbot-send-btn"
-            disabled={loading || !input.trim()}
-          >
-            {loading ? "Sending..." : "Send ➤"}
-          </button>
-        </form>
+  <button
+    type="submit"
+    className="chatbot-send-btn"
+    disabled={loading || !input.trim()}
+  >
+    {loading ? "Sending..." : "Send ➤"}
+  </button>
+</form>
+
 
         <p className="chatbot-disclaimer">
           AI-generated advice may not always be accurate.
