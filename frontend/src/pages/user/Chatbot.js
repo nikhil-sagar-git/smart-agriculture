@@ -1,390 +1,321 @@
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
 import "./Chatbot.css";
 
 export default function Chatbot() {
-  const navigate = useNavigate();
-  const messagesEndRef = useRef(null);
-
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-
   const [messages, setMessages] = useState([
     {
-      id: 1,
-      text: "Hello Farmer! 🌱 I'm your AI Farming Assistant. I can help you with crop recommendations, fertilizer, plant diseases, weather, soil, and general farming questions.",
-      sender: "bot",
+      role: "assistant",
+      content:
+        "Hello! Welcome to Smart Agriculture Assistant. Ask me about crops, fertilizers, soil health, and farming practices.",
     },
   ]);
 
-  // Scroll to latest message
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const messagesEndRef = useRef(null);
+
+  // =====================================
+  // AUTO SCROLL TO LATEST MESSAGE
+  // =====================================
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth",
     });
   }, [messages, loading]);
 
-  // =====================================================
-  // SEND MESSAGE TO AI BACKEND
-  // =====================================================
+  // =====================================
+  // SEND MESSAGE TO BACKEND
+  // =====================================
 
-  const handleSend = async () => {
-    const userMessage = input.trim();
+  const handleSend = async (e) => {
+    if (e) e.preventDefault();
 
-    if (!userMessage || loading) return;
+    const question = input.trim();
 
-    // Add user message immediately
-    const newUserMessage = {
-      id: Date.now(),
-      text: userMessage,
-      sender: "user",
-    };
+    if (!question || loading) {
+      return;
+    }
 
-    setMessages((prev) => [...prev, newUserMessage]);
+    // Show user's message
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        content: question,
+      },
+    ]);
+
     setInput("");
+    setError("");
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/chat",
+      const res = await fetch(
+        "https://smart-agriculture-python3.onrender.com/chat",
         {
           method: "POST",
-
           headers: {
             "Content-Type": "application/json",
           },
-
           body: JSON.stringify({
-            message: userMessage,
+            message: question,
           }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to connect to chatbot server");
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        throw new Error(
+          data.error || "Unable to get a response from the server."
+        );
       }
 
-      const data = await response.json();
+      // Support common response field names
+      const reply =
+        data.response ||
+        data.reply ||
+        data.answer ||
+        data.message;
 
-      // Expected backend response:
-      //
-      // {
-      //   "reply": "Rice is suitable...",
-      //   "tool": "crop_recommendation"
-      // }
-
-      const botMessage = {
-        id: Date.now() + 1,
-        text:
-          data.reply ||
-          "Sorry, I couldn't generate a response.",
-        sender: "bot",
-        tool: data.tool || null,
-      };
-
-      setMessages((prev) => [...prev, botMessage]);
-
-    } catch (error) {
-      console.error("Chatbot error:", error);
+      if (!reply) {
+        throw new Error(
+          "The server returned an empty response."
+        );
+      }
 
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now() + 1,
-          text:
-            "⚠️ I couldn't connect to the AI server. Please make sure the chatbot backend is running.",
-          sender: "bot",
+          role: "assistant",
+          content: reply,
         },
       ]);
+    } catch (err) {
+      console.error("Chatbot error:", err);
+
+      setError(
+        err.message ||
+          "Server error. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // =====================================================
-  // ENTER KEY
-  // =====================================================
+  // =====================================
+  // CLEAR CHAT
+  // =====================================
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleSend();
-    }
+  const handleClearChat = () => {
+    setMessages([
+      {
+        role: "assistant",
+        content:
+          "Hello! Welcome to Smart Agriculture Assistant. Ask me about crops, fertilizers, soil health, and farming practices.",
+      },
+    ]);
+
+    setInput("");
+    setError("");
   };
 
-  // =====================================================
-  // QUICK QUESTIONS
-  // =====================================================
+  // =====================================
+  // SUGGESTED QUESTIONS
+  // =====================================
 
-  const quickQuestions = [
-    "Which crop is suitable for my soil?",
+  const suggestions = [
     "How can I improve soil fertility?",
-    "What fertilizer should I use?",
-    "My plant leaves are turning yellow",
-    "What is the importance of soil pH?",
-    "What weather conditions are good for farming?",
+    "Which fertilizer is useful for rice?",
+    "How do I choose a crop for my soil?",
+    "How can farmers save water?",
   ];
 
-  const handleQuickQuestion = (question) => {
-    setInput(question);
-  };
-
-  // =====================================================
-  // TOOL NAVIGATION
-  // =====================================================
-
-  const handleToolNavigation = (tool) => {
-    if (tool === "crop_recommendation") {
-      navigate("/crop");
-    }
-
-    if (tool === "fertilizer_recommendation") {
-      navigate("/fertilizer");
-    }
-
-    if (tool === "disease_detection") {
-      navigate("/disease");
-    }
-  };
-
   return (
-    <div className="ai-chat-page">
+    <div className="chatbot-page">
 
-      {/* =================================================
+      {/* =====================================
           NAVBAR
-      ================================================= */}
+      ===================================== */}
 
-      <div className="chat-navbar">
-
-        <div className="brand-section">
-
-          <div className="ai-logo">
-            🌱
-          </div>
+      <div className="chatbot-navbar">
+        <div className="chatbot-brand">
+          <span className="chatbot-brand-icon">🌱</span>
 
           <div>
-            <h2>AGRIHUB AI</h2>
-
-            <span className="online-status">
-              <span className="status-dot"></span>
-              AI Farming Assistant
-            </span>
+            <h2>Smart Agriculture</h2>
+            <p>AI Farming Assistant</p>
           </div>
-
         </div>
 
         <button
-          className="dashboard-button"
-          onClick={() => navigate("/")}
+          type="button"
+          className="chatbot-clear-btn"
+          onClick={handleClearChat}
+          disabled={loading}
         >
-          Dashboard
+          Clear Chat
         </button>
-
       </div>
 
+      {/* =====================================
+          CHAT CONTAINER
+      ===================================== */}
 
-      {/* =================================================
-          MAIN CHAT AREA
-      ================================================= */}
+      <div className="chatbot-container">
 
-      <div className="chat-wrapper">
+        {/* HEADER */}
 
-        <div className="chat-card">
+        <div className="chatbot-header">
+          <div className="chatbot-avatar">🌿</div>
 
-          {/* HEADER */}
-
-          <div className="chat-header">
-
-            <div className="assistant-avatar">
-              🤖
-            </div>
-
-            <div>
-
-              <h3>
-                Smart Agriculture Assistant
-              </h3>
-
-              <p>
-                Ask me anything about farming
-              </p>
-
-            </div>
-
-          </div>
-
-
-          {/* =================================================
-              MESSAGES
-          ================================================= */}
-
-          <div className="messages-container">
-
-            {messages.map((msg) => (
-
-              <div
-                key={msg.id}
-                className={
-                  msg.sender === "user"
-                    ? "message-row user-row"
-                    : "message-row bot-row"
-                }
-              >
-
-                {msg.sender === "bot" && (
-                  <div className="message-avatar">
-                    🤖
-                  </div>
-                )}
-
-                <div
-                  className={
-                    msg.sender === "user"
-                      ? "message user-message"
-                      : "message bot-message"
-                  }
-                >
-
-                  <p>
-                    {msg.text}
-                  </p>
-
-                  {/* TOOL ACTION */}
-
-                  {msg.tool && (
-                    <button
-                      className="tool-button"
-                      onClick={() =>
-                        handleToolNavigation(msg.tool)
-                      }
-                    >
-                      Open AGRIHUB Tool →
-                    </button>
-                  )}
-
-                </div>
-
-                {msg.sender === "user" && (
-                  <div className="message-avatar user-avatar">
-                    👨‍🌾
-                  </div>
-                )}
-
-              </div>
-
-            ))}
-
-
-            {/* =================================================
-                TYPING INDICATOR
-            ================================================= */}
-
-            {loading && (
-
-              <div className="message-row bot-row">
-
-                <div className="message-avatar">
-                  🤖
-                </div>
-
-                <div className="message bot-message typing">
-
-                  <span></span>
-                  <span></span>
-                  <span></span>
-
-                </div>
-
-              </div>
-
-            )}
-
-            <div ref={messagesEndRef} />
-
-          </div>
-
-
-          {/* =================================================
-              QUICK QUESTIONS
-          ================================================= */}
-
-          <div className="quick-section">
-
+          <div>
+            <h3>Agri Assistant</h3>
             <p>
-              Try asking:
+              Ask questions about agriculture and farming
             </p>
-
-            <div className="quick-buttons">
-
-              {quickQuestions.map(
-                (question, index) => (
-
-                  <button
-                    key={index}
-                    onClick={() =>
-                      handleQuickQuestion(question)
-                    }
-                  >
-                    {question}
-                  </button>
-
-                )
-              )}
-
-            </div>
-
           </div>
 
-
-          {/* =================================================
-              INPUT
-          ================================================= */}
-
-          <div className="input-section">
-
-            <input
-              type="text"
-              placeholder="Ask your farming question..."
-              value={input}
-              onChange={(e) =>
-                setInput(e.target.value)
-              }
-              onKeyDown={handleKeyDown}
-              disabled={loading}
-            />
-
-            <button
-              className="send-button"
-              onClick={handleSend}
-              disabled={
-                loading || !input.trim()
-              }
-            >
-
-              {loading ? "..." : "➤"}
-
-            </button>
-
-          </div>
-
-
-          {/* FOOTER */}
-
-          <div className="chat-footer">
-
-            <span>
-              🌱 AI-powered agricultural assistance
-            </span>
-
-            <span>
-              RAG • ML • Weather • AI
-            </span>
-
-          </div>
-
+          <span className="chatbot-status">
+            AI
+          </span>
         </div>
 
-      </div>
+        {/* =====================================
+            SUGGESTED QUESTIONS
+        ===================================== */}
 
+        <div className="chatbot-suggestions">
+          <h4>Suggested Questions</h4>
+
+          <div className="suggestion-list">
+            {suggestions.map((question, index) => (
+              <button
+                type="button"
+                className="suggestion-btn"
+                key={index}
+                disabled={loading}
+                onClick={() => {
+                  setInput(question);
+                }}
+              >
+                {question}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* =====================================
+            MESSAGES
+        ===================================== */}
+
+        <div className="chatbot-messages">
+          {messages.map((msg, index) => (
+            <div
+              className={`chat-message ${
+                msg.role === "user"
+                  ? "user-message"
+                  : "assistant-message"
+              }`}
+              key={index}
+            >
+              {msg.role === "assistant" && (
+                <div className="message-avatar">
+                  🌱
+                </div>
+              )}
+
+              <div className="message-content">
+                <span className="message-role">
+                  {msg.role === "user"
+                    ? "You"
+                    : "Agri Assistant"}
+                </span>
+
+                <p>{msg.content}</p>
+              </div>
+            </div>
+          ))}
+
+          {/* LOADING INDICATOR */}
+
+          {loading && (
+            <div className="chat-message assistant-message">
+              <div className="message-avatar">
+                🌱
+              </div>
+
+              <div className="message-content">
+                <span className="message-role">
+                  Agri Assistant
+                </span>
+
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* =====================================
+            ERROR MESSAGE
+        ===================================== */}
+
+        {error && (
+          <div className="chatbot-error">
+            <p>{error}</p>
+
+            <button
+              type="button"
+              onClick={() => setError("")}
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {/* =====================================
+            INPUT FORM
+        ===================================== */}
+
+        <form
+          className="chatbot-input-area"
+          onSubmit={handleSend}
+        >
+          <input
+            type="text"
+            value={input}
+            placeholder="Ask your agriculture question..."
+            onChange={(e) =>
+              setInput(e.target.value)
+            }
+            disabled={loading}
+          />
+
+          <button
+            type="submit"
+            className="chatbot-send-btn"
+            disabled={loading || !input.trim()}
+          >
+            {loading ? "Sending..." : "Send ➤"}
+          </button>
+        </form>
+
+        <p className="chatbot-disclaimer">
+          AI-generated advice may not always be accurate.
+          Verify important farming decisions with a local
+          agricultural expert.
+        </p>
+
+      </div>
     </div>
   );
 }
