@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
+
 import {
   Sprout,
   Leaf,
@@ -12,7 +13,6 @@ import {
   Menu,
   X,
   BrainCircuit,
-  ShieldCheck,
   Globe,
   ChevronRight,
   Cpu,
@@ -70,6 +70,13 @@ const features = [
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Images from public/images folder
+  const heroImage =
+    `${process.env.PUBLIC_URL}/images/agriculture-hero.jpg`;
+
+  const techImage =
+    `${process.env.PUBLIC_URL}/images/agriculture-tech.jpg`;
+
   return (
     <div className="agri-home">
 
@@ -79,6 +86,7 @@ export default function Home() {
           <div className="agri-logo-icon">
             <Sprout size={27} />
           </div>
+
           <span>
             AgriMind <strong>AI</strong>
           </span>
@@ -125,7 +133,12 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="agri-hero">
+      <section
+        className="agri-hero"
+        style={{
+          backgroundImage: `url("${heroImage}")`
+        }}
+      >
         <div className="agri-hero-overlay"></div>
 
         <div className="agri-hero-content">
@@ -160,13 +173,21 @@ export default function Home() {
           </div>
 
           <div className="agri-hero-trust">
-            <span><BrainCircuit size={18} /> AI Powered</span>
-            <span><ShieldCheck size={18} /> Secure Platform</span>
-            <span><Globe size={18} /> Farmer Focused</span>
+            <span>
+              <BrainCircuit size={18} /> AI Powered
+            </span>
+
+            <span>
+              <Sprout size={18} /> Smart Agriculture
+            </span>
+
+            <span>
+              <Globe size={18} /> Farmer Focused
+            </span>
           </div>
         </div>
 
-        {/* Floating technology card */}
+        {/* Floating Card */}
         <div className="agri-floating-card">
           <div className="agri-floating-icon">
             <Leaf size={28} />
@@ -180,7 +201,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Technology Highlights */}
+      {/* Highlights */}
       <section className="agri-highlights">
         <div>
           <Sprout />
@@ -202,12 +223,12 @@ export default function Home() {
 
         <div>
           <Globe />
-          <h2>24/7</h2>
-          <p>Digital Accessibility</p>
+          <h2>Digital</h2>
+          <p>Agriculture Platform</p>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features */}
       <section className="agri-features" id="features">
         <div className="agri-section-heading">
           <span className="agri-section-label">
@@ -227,11 +248,14 @@ export default function Home() {
         </div>
 
         <div className="agri-feature-grid">
-          {features.map((feature, index) => {
+          {features.map((feature) => {
             const Icon = feature.icon;
 
             return (
-              <article className="agri-feature-card" key={index}>
+              <article
+                className="agri-feature-card"
+                key={feature.title}
+              >
                 <div className={`agri-feature-icon ${feature.color}`}>
                   <Icon size={29} />
                 </div>
@@ -248,9 +272,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* AI Technology Section */}
+      {/* AI Technology */}
       <section className="agri-technology">
-        <div className="agri-tech-image">
+
+        <div
+          className="agri-tech-image"
+          style={{
+            backgroundImage: `url("${techImage}")`
+          }}
+        >
           <div className="agri-tech-tag">
             <Cpu size={22} />
             Intelligent Farming Technology
@@ -276,25 +306,35 @@ export default function Home() {
 
           <div className="agri-tech-item">
             <div><BrainCircuit /></div>
+
             <section>
               <h4>Machine Learning Models</h4>
-              <p>Data-driven crop and fertilizer recommendations.</p>
+              <p>
+                Data-driven crop and fertilizer recommendations.
+              </p>
             </section>
           </div>
 
           <div className="agri-tech-item">
             <div><Bot /></div>
+
             <section>
               <h4>Generative AI Assistant</h4>
-              <p>Intelligent agricultural conversations powered by LLMs.</p>
+              <p>
+                Intelligent agricultural conversations powered
+                by large language models.
+              </p>
             </section>
           </div>
 
           <div className="agri-tech-item">
             <div><CloudSun /></div>
+
             <section>
               <h4>Weather-Based Insights</h4>
-              <p>Plan farming activities using weather information.</p>
+              <p>
+                Plan farming activities using weather information.
+              </p>
             </section>
           </div>
 
@@ -304,7 +344,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Call to Action */}
+      {/* Call To Action */}
       <section className="agri-cta">
         <Sprout size={45} />
 
@@ -346,8 +386,11 @@ export default function Home() {
         </div>
 
         <div className="agri-footer-bottom">
-          © {new Date().getFullYear()} AgriMind AI.
-          All rights reserved.
+          <span>
+            © {new Date().getFullYear()} AgriMind AI.
+            All rights reserved.
+          </span>
+
           <span>Built for a greener future.</span>
         </div>
       </footer>
