@@ -1,0 +1,752 @@
+
+/* =========================================
+   AGRIMIND AI - REGISTER PAGE
+========================================= */
+
+.agr-register {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #ffffff;
+  color: #183525;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.agr-register * {
+  box-sizing: border-box;
+}
+
+.agr-register a {
+  text-decoration: none;
+}
+
+.agr-register h1,
+.agr-register h2,
+.agr-register p {
+  margin: 0;
+}
+
+/* =========================================
+   LEFT SIDE - AGRICULTURE BACKGROUND
+========================================= */
+
+.agr-register-visual {
+  position: relative;
+  min-height: 100vh;
+  background-color: #052e16;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.agr-register-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    145deg,
+    rgba(3, 25, 13, 0.95),
+    rgba(5, 46, 22, 0.80),
+    rgba(5, 46, 22, 0.48)
+  );
+}
+
+.agr-register-visual-content {
+  position: relative;
+  z-index: 2;
+  min-height: 100%;
+  padding: 45px 9%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 50px;
+}
+
+/* Logo */
+
+.agr-register-logo {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 12px;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.agr-register-logo strong {
+  color: #86efac;
+}
+
+.agr-register-logo-icon {
+  display: flex;
+  padding: 12px;
+  border-radius: 15px;
+  color: #86efac;
+  background: rgba(134, 239, 172, 0.15);
+  border: 1px solid rgba(134, 239, 172, 0.25);
+  backdrop-filter: blur(10px);
+}
+
+/* Introduction */
+
+.agr-register-intro {
+  animation: agrRegisterFadeUp 0.8s ease both;
+}
+
+.agr-register-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border-radius: 50px;
+  background: rgba(134, 239, 172, 0.12);
+  border: 1px solid rgba(134, 239, 172, 0.25);
+  color: #bbf7d0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 25px;
+}
+
+.agr-register-intro h1 {
+  color: #ffffff;
+  font-size: clamp(35px, 4vw, 64px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -2.5px;
+}
+
+.agr-register-intro h1 span {
+  background: linear-gradient(
+    90deg,
+    #4ade80,
+    #bef264
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.agr-register-intro > p {
+  color: #d1e7d7;
+  font-size: 16px;
+  line-height: 1.9;
+  margin: 25px 0 35px;
+  max-width: 480px;
+}
+
+/* Benefits */
+
+.agr-register-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.agr-register-benefit {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #e4f5e9;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.agr-register-benefit > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: rgba(134, 239, 172, 0.13);
+  color: #86efac;
+  border: 1px solid rgba(134, 239, 172, 0.15);
+}
+
+.agr-register-copyright {
+  color: #b4d2bf;
+  font-size: 12px;
+}
+
+/* =========================================
+   RIGHT SIDE - REGISTRATION FORM
+========================================= */
+
+.agr-register-main {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 75px 40px 35px;
+  background:
+    radial-gradient(
+      circle at top right,
+      #f0fdf4,
+      transparent 45%
+    ),
+    #ffffff;
+}
+
+.agr-register-back {
+  position: absolute;
+  top: 25px;
+  left: 35px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.agr-register-back:hover {
+  color: #15803d;
+}
+
+.agr-register-form-wrapper {
+  width: 100%;
+  max-width: 440px;
+  animation: agrRegisterFadeUp 0.6s ease both;
+}
+
+/* Form heading */
+
+.agr-register-heading {
+  margin-bottom: 28px;
+}
+
+.agr-register-heading-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #dcfce7;
+  color: #15803d;
+  border-radius: 17px;
+  margin-bottom: 18px;
+}
+
+.agr-register-eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #15803d;
+  margin-bottom: 7px;
+}
+
+.agr-register-heading h2 {
+  color: #14281c;
+  font-size: clamp(28px, 3vw, 37px);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1.2;
+}
+
+.agr-register-heading p {
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* =========================================
+   FORM INPUTS
+========================================= */
+
+.agr-register-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  margin: 0;
+  gap: 18px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.agr-register-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.agr-register-field label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #33463a;
+}
+
+.agr-register-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 15px;
+  min-height: 52px;
+  border: 1px solid #dce5df;
+  border-radius: 11px;
+  background: #f8faf9;
+  transition: all 0.25s ease;
+}
+
+.agr-register-input > svg {
+  color: #7b9283;
+  flex-shrink: 0;
+}
+
+.agr-register-input:focus-within {
+  background: #ffffff;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.10);
+}
+
+.agr-register-input:focus-within > svg {
+  color: #16a34a;
+}
+
+.agr-register .agr-register-input input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: #14281c;
+}
+
+.agr-register-input input::placeholder {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.agr-register-input input:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Password visibility button */
+
+.agr-register .agr-register-eye {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  flex-shrink: 0;
+  background: transparent;
+  color: #64748b;
+  padding: 5px;
+  margin: 0;
+  border: none;
+  border-radius: 5px;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.agr-register .agr-register-eye:hover {
+  color: #15803d;
+  background: #dcfce7;
+  transform: none;
+}
+
+/* =========================================
+   OTP BUTTON AND INPUT
+========================================= */
+
+.agr-register .agr-register-otp-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 15px;
+  margin: -6px 0 0;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  background: #f0fdf4;
+  color: #15803d;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: none;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.agr-register .agr-register-otp-btn:hover:not(:disabled) {
+  background: #dcfce7;
+  border-color: #22c55e;
+}
+
+.agr-register .agr-register-otp-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.agr-register-otp-input input {
+  letter-spacing: 4px;
+  font-weight: 700;
+}
+
+.agr-register-otp-input input::placeholder {
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.agr-register-input .agr-register-check {
+  color: #16a34a;
+}
+
+.agr-register-help {
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   PASSWORD STRENGTH
+========================================= */
+
+.agr-register-strength {
+  margin-top: 3px;
+}
+
+.agr-register-strength-bars {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.agr-register-strength-bars span {
+  flex: 1;
+  height: 4px;
+  border-radius: 10px;
+  background: #e2e8f0;
+  transition: background 0.3s;
+}
+
+.agr-register-strength-bars .weak {
+  background: #ef4444;
+}
+
+.agr-register-strength-bars .medium {
+  background: #f59e0b;
+}
+
+.agr-register-strength-bars .strong {
+  background: #22c55e;
+}
+
+.agr-register-strength small {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.agr-register-strength strong.weak {
+  color: #dc2626;
+}
+
+.agr-register-strength strong.medium {
+  color: #b45309;
+}
+
+.agr-register-strength strong.strong {
+  color: #15803d;
+}
+
+/* =========================================
+   STATUS MESSAGES
+========================================= */
+
+.agr-register-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  animation: agrRegisterFadeUp 0.3s ease;
+}
+
+.agr-register-message svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.agr-register-message.success {
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.agr-register-message.error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.agr-register-message.info {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+/* =========================================
+   REGISTER BUTTON
+========================================= */
+
+.agr-register .agr-register-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 53px;
+  padding: 14px 20px;
+  margin: 4px 0 0;
+  border: none;
+  border-radius: 11px;
+  background: linear-gradient(
+    135deg,
+    #15803d,
+    #16a34a
+  );
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 8px 25px rgba(21, 128, 61, 0.20);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.agr-register .agr-register-submit:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(21, 128, 61, 0.30);
+  background: linear-gradient(
+    135deg,
+    #166534,
+    #15803d
+  );
+}
+
+.agr-register .agr-register-submit:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   LOGIN AND SECURITY
+========================================= */
+
+.agr-register-login {
+  margin-top: 24px;
+  text-align: center;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.agr-register-login a {
+  color: #15803d;
+  font-weight: 800;
+}
+
+.agr-register-login a:hover {
+  text-decoration: underline;
+}
+
+.agr-register-security {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-top: 1px solid #e2e8e4;
+  padding-top: 20px;
+  margin-top: 25px;
+  color: #64748b;
+  font-size: 11px;
+  text-align: center;
+}
+
+.agr-register-security svg {
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+/* Keyboard accessibility */
+
+.agr-register button:focus-visible,
+.agr-register a:focus-visible {
+  outline: 3px solid #4ade80;
+  outline-offset: 4px;
+}
+
+/* =========================================
+   ANIMATIONS
+========================================= */
+
+.agr-register-spinner {
+  animation: agrRegisterSpin 0.8s linear infinite;
+}
+
+@keyframes agrRegisterSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes agrRegisterFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   TABLET RESPONSIVE
+========================================= */
+
+@media (max-width: 1024px) {
+
+  .agr-register {
+    grid-template-columns: 0.9fr 1.1fr;
+  }
+
+  .agr-register-visual-content {
+    padding: 35px 7%;
+  }
+
+  .agr-register-intro h1 {
+    font-size: 40px;
+    letter-spacing: -1.5px;
+  }
+
+  .agr-register-main {
+    padding: 75px 30px 35px;
+  }
+
+}
+
+/* =========================================
+   MOBILE RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .agr-register {
+    grid-template-columns: 1fr;
+  }
+
+  .agr-register-visual {
+    min-height: auto;
+  }
+
+  .agr-register-visual-content {
+    padding: 25px 6% 35px;
+    gap: 30px;
+  }
+
+  .agr-register-logo {
+    font-size: 24px;
+  }
+
+  .agr-register-logo-icon {
+    padding: 9px;
+  }
+
+  .agr-register-intro h1 {
+    font-size: 36px;
+  }
+
+  .agr-register-intro > p {
+    font-size: 14px;
+    margin: 15px 0 0;
+  }
+
+  .agr-register-badge {
+    font-size: 10px;
+    margin-bottom: 15px;
+  }
+
+  .agr-register-benefits,
+  .agr-register-copyright {
+    display: none;
+  }
+
+  .agr-register-main {
+    padding: 70px 6% 35px;
+  }
+
+  .agr-register-back {
+    top: 22px;
+    left: 6%;
+  }
+
+  .agr-register-form-wrapper {
+    max-width: 480px;
+  }
+
+  .agr-register-heading h2 {
+    font-size: 30px;
+  }
+
+}
+
+@media (max-width: 400px) {
+
+  .agr-register-intro h1 {
+    font-size: 30px;
+  }
+
+  .agr-register-heading h2 {
+    font-size: 27px;
+  }
+
+  .agr-register-input {
+    padding: 0 11px;
+    gap: 9px;
+  }
+
+  .agr-register-security {
+    font-size: 10px;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .agr-register *,
+  .agr-register *::before,
+  .agr-register *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+}
