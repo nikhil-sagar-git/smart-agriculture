@@ -1,0 +1,704 @@
+
+/* =========================================
+   AGRIMIND AI - LOGIN PAGE
+========================================= */
+
+.agr-login-page {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #ffffff;
+  color: #183525;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.agr-login-page * {
+  box-sizing: border-box;
+}
+
+.agr-login-page a {
+  text-decoration: none;
+}
+
+.agr-login-page h1,
+.agr-login-page h2,
+.agr-login-page p {
+  margin: 0;
+}
+
+/* =========================================
+   LEFT SIDE - AGRICULTURE BACKGROUND
+========================================= */
+
+.agr-login-visual {
+  position: relative;
+  min-height: 100vh;
+  background-color: #052e16;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.agr-login-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    145deg,
+    rgba(3, 25, 13, 0.95),
+    rgba(5, 46, 22, 0.80),
+    rgba(5, 46, 22, 0.48)
+  );
+}
+
+.agr-login-visual-content {
+  position: relative;
+  z-index: 2;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 45px 9%;
+  gap: 50px;
+}
+
+/* =========================================
+   LOGO
+========================================= */
+
+.agr-login-logo {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 12px;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.agr-login-logo strong {
+  color: #86efac;
+}
+
+.agr-login-logo-icon {
+  display: flex;
+  padding: 12px;
+  border-radius: 15px;
+  color: #86efac;
+  background: rgba(134, 239, 172, 0.15);
+  border: 1px solid rgba(134, 239, 172, 0.25);
+  backdrop-filter: blur(10px);
+}
+
+/* =========================================
+   INTRODUCTION
+========================================= */
+
+.agr-login-intro {
+  animation: agrLoginFadeUp 0.8s ease both;
+}
+
+.agr-login-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-radius: 50px;
+  background: rgba(134, 239, 172, 0.12);
+  border: 1px solid rgba(134, 239, 172, 0.25);
+  color: #bbf7d0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 26px;
+}
+
+.agr-login-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: agrLoginPulse 2s infinite;
+}
+
+.agr-login-intro h1 {
+  font-size: clamp(35px, 4vw, 64px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -2.5px;
+  color: #ffffff;
+}
+
+.agr-login-intro h1 span {
+  background: linear-gradient(
+    90deg,
+    #4ade80,
+    #bef264
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.agr-login-intro > p {
+  font-size: 16px;
+  color: #d1e7d7;
+  line-height: 1.9;
+  margin: 25px 0 35px;
+  max-width: 480px;
+}
+
+/* =========================================
+   FEATURE HIGHLIGHTS
+========================================= */
+
+.agr-login-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.agr-login-benefit {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #e4f5e9;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.agr-login-benefit > div {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #86efac;
+  background: rgba(134, 239, 172, 0.13);
+  border: 1px solid rgba(134, 239, 172, 0.15);
+}
+
+.agr-login-copyright {
+  color: #b4d2bf;
+  font-size: 12px;
+}
+
+/* =========================================
+   RIGHT SIDE - LOGIN FORM
+========================================= */
+
+.agr-login-main {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px 45px;
+  background:
+    radial-gradient(
+      circle at top right,
+      #f0fdf4,
+      transparent 45%
+    ),
+    #ffffff;
+}
+
+.agr-login-back {
+  position: absolute;
+  top: 28px;
+  left: 35px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  transition: color 0.25s ease;
+}
+
+.agr-login-back:hover {
+  color: #15803d;
+}
+
+.agr-login-wrapper {
+  width: 100%;
+  max-width: 440px;
+  animation: agrLoginFadeUp 0.7s ease both;
+}
+
+/* =========================================
+   FORM HEADING
+========================================= */
+
+.agr-login-heading {
+  margin-bottom: 32px;
+}
+
+.agr-login-heading-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #dcfce7;
+  color: #15803d;
+  border-radius: 19px;
+  margin-bottom: 22px;
+}
+
+.agr-login-eyebrow {
+  display: block;
+  color: #15803d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 9px;
+}
+
+.agr-login-heading h2 {
+  font-size: clamp(28px, 3vw, 37px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -1.5px;
+  color: #14281c;
+}
+
+.agr-login-heading p {
+  color: #64748b;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+/* =========================================
+   FORM FIELDS
+========================================= */
+
+.agr-login-page .agr-login-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.agr-login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agr-login-field label {
+  color: #33463a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.agr-login-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 15px;
+  border: 1px solid #dce5df;
+  border-radius: 12px;
+  background: #f8faf9;
+  transition: all 0.25s ease;
+}
+
+.agr-login-input > svg {
+  color: #7b9283;
+  flex-shrink: 0;
+}
+
+.agr-login-input:focus-within {
+  background: #ffffff;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.10);
+}
+
+.agr-login-input:focus-within > svg {
+  color: #16a34a;
+}
+
+.agr-login-page .agr-login-input input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 54px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  color: #14281c;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.agr-login-input input::placeholder {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.agr-login-input input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   PASSWORD VISIBILITY
+========================================= */
+
+.agr-login-page .agr-login-eye {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  flex-shrink: 0;
+  padding: 6px;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.agr-login-page .agr-login-eye:hover {
+  background: #dcfce7;
+  color: #15803d;
+  transform: none;
+}
+
+/* =========================================
+   STATUS MESSAGES
+========================================= */
+
+.agr-login-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 15px;
+  border-radius: 11px;
+  font-size: 13px;
+  line-height: 1.6;
+  animation: agrLoginFadeUp 0.3s ease;
+}
+
+.agr-login-message svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.agr-login-message.error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.agr-login-message.success {
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+/* =========================================
+   SIGN IN BUTTON
+========================================= */
+
+.agr-login-page .agr-login-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 55px;
+  padding: 15px 22px;
+  margin: 4px 0 0;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    #15803d,
+    #16a34a
+  );
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(21, 128, 61, 0.20);
+  transition: all 0.3s ease;
+}
+
+.agr-login-page .agr-login-submit:hover:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    #166534,
+    #15803d
+  );
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(21, 128, 61, 0.30);
+}
+
+.agr-login-page .agr-login-submit:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   DIVIDER
+========================================= */
+
+.agr-login-divider {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 32px 0 22px;
+}
+
+.agr-login-divider span {
+  flex: 1;
+  height: 1px;
+  background: #e2e8e4;
+}
+
+.agr-login-divider p {
+  color: #64748b;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* =========================================
+   REGISTER BUTTON
+========================================= */
+
+.agr-login-register-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 53px;
+  padding: 14px 20px;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  background: #f0fdf4;
+  color: #15803d;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.agr-login-register-btn:hover {
+  background: #dcfce7;
+  border-color: #22c55e;
+  color: #166534;
+  transform: translateY(-2px);
+}
+
+/* =========================================
+   BOTTOM INFORMATION
+========================================= */
+
+.agr-login-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-top: 1px solid #e2e8e4;
+  margin-top: 35px;
+  padding-top: 22px;
+  color: #64748b;
+  font-size: 11px;
+  text-align: center;
+}
+
+.agr-login-bottom svg {
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+/* =========================================
+   ACCESSIBILITY
+========================================= */
+
+.agr-login-page button:focus-visible,
+.agr-login-page a:focus-visible {
+  outline: 3px solid #4ade80;
+  outline-offset: 4px;
+}
+
+/* =========================================
+   ANIMATIONS
+========================================= */
+
+.agr-login-spinner {
+  animation: agrLoginSpin 0.8s linear infinite;
+}
+
+@keyframes agrLoginSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes agrLoginFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes agrLoginPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5);
+  }
+
+  50% {
+    box-shadow: 0 0 0 7px rgba(74, 222, 128, 0);
+  }
+}
+
+/* =========================================
+   TABLET RESPONSIVE
+========================================= */
+
+@media (max-width: 1024px) {
+
+  .agr-login-page {
+    grid-template-columns: 0.9fr 1.1fr;
+  }
+
+  .agr-login-visual-content {
+    padding: 35px 7%;
+  }
+
+  .agr-login-intro h1 {
+    font-size: 40px;
+    letter-spacing: -1.5px;
+  }
+
+  .agr-login-main {
+    padding: 75px 30px 40px;
+  }
+
+}
+
+/* =========================================
+   MOBILE RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .agr-login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .agr-login-visual {
+    min-height: auto;
+  }
+
+  .agr-login-visual-content {
+    padding: 25px 6% 35px;
+    gap: 30px;
+  }
+
+  .agr-login-logo {
+    font-size: 24px;
+  }
+
+  .agr-login-logo-icon {
+    padding: 9px;
+  }
+
+  .agr-login-intro h1 {
+    font-size: 36px;
+  }
+
+  .agr-login-intro > p {
+    font-size: 14px;
+    margin: 15px 0 0;
+  }
+
+  .agr-login-badge {
+    font-size: 10px;
+    margin-bottom: 15px;
+  }
+
+  .agr-login-benefits,
+  .agr-login-copyright {
+    display: none;
+  }
+
+  .agr-login-main {
+    padding: 75px 6% 40px;
+  }
+
+  .agr-login-back {
+    top: 22px;
+    left: 6%;
+  }
+
+  .agr-login-wrapper {
+    max-width: 480px;
+  }
+
+  .agr-login-heading h2 {
+    font-size: 30px;
+  }
+
+}
+
+@media (max-width: 400px) {
+
+  .agr-login-intro h1 {
+    font-size: 30px;
+  }
+
+  .agr-login-heading h2 {
+    font-size: 27px;
+  }
+
+  .agr-login-input {
+    padding: 0 11px;
+    gap: 9px;
+  }
+
+  .agr-login-bottom {
+    font-size: 10px;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .agr-login-page *,
+  .agr-login-page *::before,
+  .agr-login-page *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+}
