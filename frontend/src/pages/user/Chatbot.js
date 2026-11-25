@@ -1,51 +1,169 @@
+
 import { useState, useRef, useEffect } from "react";
+import { Link, NavLink } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+import {
+  Sprout,
+  Bot,
+  Plus,
+  LayoutDashboard,
+  ScanLine,
+  FlaskConical,
+  Droplets,
+  ArrowUp,
+  ArrowUpRight,
+  Sparkles,
+  Copy,
+  Check,
+  Trash2,
+  Menu,
+  X,
+  AlertCircle,
+  User,
+  Leaf
+} from "lucide-react";
+
 import "./Chatbot.css";
 
-export default function Chatbot() {
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content:
-        "Hello! Welcome to Smart Agriculture Assistant. Ask me about crops, fertilizers, soil health, and farming practices.",
-    },
-  ]);
+const API_URL =
+  "https://smart-agriculture-python3.onrender.com/chat";
 
+const suggestions = [
+  {
+    title: "Crop Cultivation",
+    question: "How do I choose the best crop for my soil?",
+    icon: Sprout,
+    color: "green"
+  },
+  {
+    title: "Soil Nutrition",
+    question: "How can I improve soil fertility?",
+    icon: FlaskConical,
+    color: "orange"
+  },
+  {
+    title: "Plant Health",
+    question: "How can I prevent common plant diseases?",
+    icon: ScanLine,
+    color: "purple"
+  },
+  {
+    title: "Water Management",
+    question: "How can farmers save water during irrigation?",
+    icon: Droplets,
+    color: "blue"
+  }
+];
+
+const navigation = [
+  {
+    name: "Dashboard",
+    path: "/dashboard",
+    icon: LayoutDashboard
+  },
+  {
+    name: "AI Assistant",
+    path: "/chatbot",
+    icon: Bot
+  },
+  {
+    name: "Crop Recommendation",
+    path: "/crop",
+    icon: Sprout
+  },
+  {
+    name: "Disease Detection",
+    path: "/disease",
+    icon: ScanLine
+  },
+  {
+    name: "Fertilizer Recommendation",
+    path: "/fertilizer",
+    icon: FlaskConical
+  }
+];
+
+export default function Chatbot() {
+
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState(null);
 
-  const messagesEndRef = useRef(null);
+  const messagesRef = useRef(null);
+  const inputRef = useRef(null);
+  const copyTimerRef = useRef(null);
+  const sendingRef = useRef(false);
 
-  // =====================================
-  // AUTO SCROLL TO LATEST MESSAGE
-  // =====================================
+  const username =
+    localStorage.getItem("username")?.trim() || "Farmer";
+
+  const email =
+    localStorage.getItem("useremail") || "";
+
+  const initials = username
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((name) => name.charAt(0))
+    .join("")
+    .toUpperCase();
+
+  // ================= AUTO SCROLL =================
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
+
+    if (messagesRef.current) {
+      messagesRef.current.scrollTo({
+        top: messagesRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
+
   }, [messages, loading]);
 
-  // =====================================
-  // SEND MESSAGE TO BACKEND
-  // =====================================
+  // ================= AUTO RESIZE INPUT =================
+
+  useEffect(() => {
+
+    if (inputRef.current) {
+
+      inputRef.current.style.height = "auto";
+
+      inputRef.current.style.height =
+        Math.min(inputRef.current.scrollHeight, 150) + "px";
+
+    }
+
+  }, [input]);
+
+  useEffect(() => {
+
+    return () => clearTimeout(copyTimerRef.current);
+
+  }, []);
+
+  // ================= SEND MESSAGE =================
 
   const handleSend = async (e) => {
-    if (e) e.preventDefault();
+
+    e?.preventDefault();
 
     const question = input.trim();
 
-    if (!question || loading) {
-      return;
-    }
+    if (!question || sendingRef.current) return;
 
-    // Show user's message
+    sendingRef.current = true;
+
     setMessages((prev) => [
       ...prev,
       {
         role: "user",
-        content: question,
-      },
+        content: question
+      }
     ]);
 
     setInput("");
@@ -53,268 +171,688 @@ export default function Chatbot() {
     setLoading(true);
 
     try {
-      const res = await fetch(
-        "https://smart-agriculture-python3.onrender.com/chat",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            message: question,
-          }),
-        }
-      );
 
-      const data = await res.json();
+      const res = await fetch(API_URL, {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          message: question
+        })
+
+      });
+
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok || data.error) {
+
         throw new Error(
-          data.error || "Unable to get a response from the server."
+          data.error ||
+          data.message ||
+          "Unable to get a response from the server."
         );
+
       }
 
-      // Support common response field names
       const reply =
         data.response ||
         data.reply ||
         data.answer ||
         data.message;
 
-      if (!reply) {
+      if (typeof reply !== "string" || !reply.trim()) {
+
         throw new Error(
-          "The server returned an empty response."
+          "The server returned an empty or invalid response."
         );
+
       }
 
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: reply,
-        },
+          content: reply
+        }
       ]);
+
     } catch (err) {
+
       console.error("Chatbot error:", err);
 
       setError(
         err.message ||
-          "Server error. Please try again."
+        "Unable to connect. Please try again."
       );
+
     } finally {
+
+      sendingRef.current = false;
       setLoading(false);
+
     }
+
   };
 
-  // =====================================
-  // CLEAR CHAT
-  // =====================================
+  // ================= NEW CHAT =================
 
   const handleClearChat = () => {
-    setMessages([
-      {
-        role: "assistant",
-        content:
-          "Hello! Welcome to Smart Agriculture Assistant. Ask me about crops, fertilizers, soil health, and farming practices.",
-      },
-    ]);
 
+    if (sendingRef.current) return;
+
+    clearTimeout(copyTimerRef.current);
+
+    setMessages([]);
     setInput("");
     setError("");
+    setCopiedIndex(null);
+    setSidebarOpen(false);
+
+    inputRef.current?.focus();
+
   };
 
-  // =====================================
-  // SUGGESTED QUESTIONS
-  // =====================================
+  // ================= COPY RESPONSE =================
 
-  const suggestions = [
-    "How can I improve soil fertility?",
-    "Which fertilizer is useful for rice?",
-    "How do I choose a crop for my soil?",
-    "How can farmers save water?",
-  ];
+  const handleCopy = async (content, index) => {
+
+    try {
+
+      await navigator.clipboard.writeText(content);
+
+      setCopiedIndex(index);
+
+      clearTimeout(copyTimerRef.current);
+
+      copyTimerRef.current = setTimeout(() => {
+        setCopiedIndex(null);
+      }, 2000);
+
+    } catch (err) {
+
+      setError("Unable to copy the response.");
+
+    }
+
+  };
+
+  // ================= KEYBOARD HANDLING =================
+
+  const handleKeyDown = (e) => {
+
+    if (
+      e.key === "Enter" &&
+      !e.shiftKey &&
+      !e.nativeEvent.isComposing
+    ) {
+
+      e.preventDefault();
+
+      handleSend();
+
+    }
+
+  };
+
+  // ================= SUGGESTED QUESTIONS =================
+
+  const selectQuestion = (question) => {
+
+    setInput(question);
+
+    inputRef.current?.focus();
+
+  };
 
   return (
-    <div className="chatbot-page">
 
-      {/* =====================================
-          NAVBAR
-      ===================================== */}
+    <div className="agc-page">
 
-      <div className="chatbot-navbar">
-        <div className="chatbot-brand">
-          <span className="chatbot-brand-icon">🌱</span>
+      {/* MOBILE OVERLAY */}
 
-          <div>
-            <h2>Smart Agriculture</h2>
-            <p>AI Farming Assistant</p>
-          </div>
-        </div>
+      {sidebarOpen && (
 
         <button
           type="button"
-          className="chatbot-clear-btn"
+          className="agc-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Close sidebar"
+        />
+
+      )}
+
+      {/* ================= SIDEBAR ================= */}
+
+      <aside
+        className={`agc-sidebar ${
+          sidebarOpen ? "agc-sidebar-open" : ""
+        }`}
+      >
+
+        <div className="agc-sidebar-header">
+
+          <Link to="/dashboard" className="agc-logo">
+
+            <div className="agc-logo-icon">
+              <Sprout size={27} />
+            </div>
+
+            <div>
+              <h2>AgriMind <span>AI</span></h2>
+              <small>SMART AGRICULTURE</small>
+            </div>
+
+          </Link>
+
+          <button
+            type="button"
+            className="agc-close-menu"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close menu"
+          >
+            <X size={22} />
+          </button>
+
+        </div>
+
+        {/* NEW CHAT BUTTON */}
+
+        <button
+          type="button"
+          className="agc-new-chat"
           onClick={handleClearChat}
           disabled={loading}
         >
-          Clear Chat
+
+          <Plus size={21} />
+
+          <span>New Chat</span>
+
         </button>
-      </div>
 
-      {/* =====================================
-          CHAT CONTAINER
-      ===================================== */}
+        {/* NAVIGATION */}
 
-      <div className="chatbot-container">
+        <div className="agc-nav-section">
 
-        {/* HEADER */}
+          <p className="agc-nav-label">WORKSPACE</p>
 
-        <div className="chatbot-header">
-          <div className="chatbot-avatar">🌿</div>
+          <nav className="agc-nav">
 
-          <div>
-            <h3>Agri Assistant</h3>
+            {navigation.map((item) => {
+
+              const Icon = item.icon;
+
+              return (
+
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end
+                  className={({ isActive }) =>
+                    `agc-nav-link ${
+                      isActive ? "agc-active" : ""
+                    }`
+                  }
+                  onClick={() => setSidebarOpen(false)}
+                >
+
+                  <Icon size={19} />
+
+                  <span>{item.name}</span>
+
+                </NavLink>
+
+              );
+
+            })}
+
+          </nav>
+
+        </div>
+
+        {/* SIDEBAR BOTTOM */}
+
+        <div className="agc-sidebar-bottom">
+
+          <div className="agc-ai-info">
+
+            <div className="agc-ai-info-icon">
+              <Sparkles size={22} />
+            </div>
+
+            <h4>Powered by AI</h4>
+
             <p>
-              Ask questions about agriculture and farming
+              Intelligent agricultural guidance
+              for smarter farming decisions.
             </p>
+
+            <div className="agc-model-label">
+
+              <span className="agc-model-dot"></span>
+
+              AI Agriculture Assistant
+
+            </div>
+
           </div>
 
-          <span className="chatbot-status">
-            AI
-          </span>
-        </div>
+          <Link to="/profile" className="agc-profile">
 
-        {/* =====================================
-            SUGGESTED QUESTIONS
-        ===================================== */}
-
-        <div className="chatbot-suggestions">
-          <h4>Suggested Questions</h4>
-
-          <div className="suggestion-list">
-            {suggestions.map((question, index) => (
-              <button
-                type="button"
-                className="suggestion-btn"
-                key={index}
-                disabled={loading}
-                onClick={() => {
-                  setInput(question);
-                }}
-              >
-                {question}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* =====================================
-            MESSAGES
-        ===================================== */}
-
-        <div className="chatbot-messages">
-          {messages.map((msg, index) => (
-            <div
-              className={`chat-message ${
-                msg.role === "user"
-                  ? "user-message"
-                  : "assistant-message"
-              }`}
-              key={index}
-            >
-              {msg.role === "assistant" && (
-                <div className="message-avatar">
-                  🌱
-                </div>
-              )}
-
-              <div className="message-content">
-                <span className="message-role">
-                  {msg.role === "user"
-                    ? "You"
-                    : "Agri Assistant"}
-                </span>
-
-                <p>{msg.content}</p>
-              </div>
+            <div className="agc-profile-avatar">
+              {initials}
             </div>
-          ))}
 
-          {/* LOADING INDICATOR */}
+            <div className="agc-profile-info">
 
-          {loading && (
-            <div className="chat-message assistant-message">
-              <div className="message-avatar">
-                🌱
-              </div>
+              <strong>{username}</strong>
 
-              <div className="message-content">
-                <span className="message-role">
-                  Agri Assistant
-                </span>
+              <small>{email || "Farmer Account"}</small>
 
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
             </div>
-          )}
 
-          <div ref={messagesEndRef} />
+            <User size={18} />
+
+          </Link>
+
         </div>
 
-        {/* =====================================
-            ERROR MESSAGE
-        ===================================== */}
+      </aside>
 
-        {error && (
-          <div className="chatbot-error">
-            <p>{error}</p>
+      {/* ================= MAIN CHAT AREA ================= */}
+
+      <main className="agc-main">
+
+        {/* CHAT HEADER */}
+
+        <header className="agc-header">
+
+          <div className="agc-header-left">
 
             <button
               type="button"
-              onClick={() => setError("")}
+              className="agc-menu-button"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={sidebarOpen}
             >
-              Dismiss
+              <Menu size={24} />
             </button>
+
+            <div className="agc-header-avatar">
+              <Bot size={26} />
+            </div>
+
+            <div className="agc-header-title">
+
+              <h2>AgriMind Assistant</h2>
+
+              <p>AI-powered agriculture guidance</p>
+
+            </div>
+
           </div>
-        )}
 
-        
+          <div className="agc-header-right">
 
-<form
-  className="chatbot-input-area"
-  onSubmit={handleSend}
->
-  <input
-    className="chatbot-text-input"
-    type="text"
-    value={input}
-    placeholder="Ask your agriculture question..."
-    onChange={(e) => setInput(e.target.value)}
-    disabled={loading}
-    autoComplete="off"
-  />
+            <span className="agc-ai-badge">
+              <Sparkles size={14} />
+              AI Assistant
+            </span>
 
-  <button
-    type="submit"
-    className="chatbot-send-btn"
-    disabled={loading || !input.trim()}
-  >
-    {loading ? "Sending..." : "Send ➤"}
-  </button>
-</form>
+            <button
+              type="button"
+              className="agc-clear-button"
+              onClick={handleClearChat}
+              disabled={loading}
+              aria-label="Clear chat"
+              title="Clear chat"
+            >
 
+              <Trash2 size={18} />
 
-        <p className="chatbot-disclaimer">
-          AI-generated advice may not always be accurate.
-          Verify important farming decisions with a local
-          agricultural expert.
-        </p>
+              <span>Clear Chat</span>
 
-      </div>
+            </button>
+
+          </div>
+
+        </header>
+
+        {/* ================= MESSAGES ================= */}
+
+        <div
+          className="agc-messages"
+          ref={messagesRef}
+        >
+
+          {messages.length === 0 ? (
+
+            /* ================= WELCOME SCREEN ================= */
+
+            <section className="agc-welcome">
+
+              <div className="agc-welcome-icon">
+
+                <Sprout size={45} strokeWidth={1.7} />
+
+                <span className="agc-welcome-sparkle">
+                  <Sparkles size={17} />
+                </span>
+
+              </div>
+
+              <div className="agc-welcome-badge">
+
+                <Sparkles size={14} />
+
+                YOUR INTELLIGENT FARMING COMPANION
+
+              </div>
+
+              <h1>
+                How can I help you <span>grow?</span>
+              </h1>
+
+              <p className="agc-welcome-description">
+
+                Welcome to Smart Agriculture Assistant.
+                Ask me about crops, fertilizers, soil health,
+                plant diseases and farming practices.
+
+              </p>
+
+              <div className="agc-suggestions">
+
+                {suggestions.map((item) => {
+
+                  const Icon = item.icon;
+
+                  return (
+
+                    <button
+                      type="button"
+                      key={item.title}
+                      className={`agc-suggestion ${item.color}`}
+                      onClick={() =>
+                        selectQuestion(item.question)
+                      }
+                    >
+
+                      <div className="agc-suggestion-top">
+
+                        <div className="agc-suggestion-icon">
+                          <Icon size={23} />
+                        </div>
+
+                        <ArrowUpRight
+                          size={19}
+                          className="agc-suggestion-arrow"
+                        />
+
+                      </div>
+
+                      <h3>{item.title}</h3>
+
+                      <p>{item.question}</p>
+
+                    </button>
+
+                  );
+
+                })}
+
+              </div>
+
+              <div className="agc-welcome-footer">
+
+                <Leaf size={16} />
+
+                Growing smarter, together.
+
+              </div>
+
+            </section>
+
+          ) : (
+
+            /* ================= CONVERSATION ================= */
+
+            <div
+              className="agc-conversation"
+              role="log"
+              aria-live="polite"
+            >
+
+              {messages.map((msg, index) => (
+
+                <div
+                  key={index}
+                  className={`agc-message ${
+                    msg.role === "user"
+                      ? "agc-user-message"
+                      : "agc-assistant-message"
+                  }`}
+                >
+
+                  <div className="agc-message-avatar">
+
+                    {msg.role === "assistant"
+                      ? <Sprout size={23} />
+                      : <User size={21} />}
+
+                  </div>
+
+                  <div className="agc-message-body">
+
+                    <div className="agc-message-role">
+
+                      {msg.role === "assistant"
+                        ? "AgriMind Assistant"
+                        : "You"}
+
+                    </div>
+
+                    <div className="agc-message-content">
+
+                      {msg.role === "assistant" ? (
+
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+
+                      ) : (
+
+                        <p>{msg.content}</p>
+
+                      )}
+
+                    </div>
+
+                    {msg.role === "assistant" && (
+
+                      <div className="agc-message-actions">
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleCopy(msg.content, index)
+                          }
+                          aria-label="Copy response"
+                        >
+
+                          {copiedIndex === index ? (
+
+                            <>
+                              <Check size={16} />
+                              Copied
+                            </>
+
+                          ) : (
+
+                            <>
+                              <Copy size={16} />
+                              Copy
+                            </>
+
+                          )}
+
+                        </button>
+
+                      </div>
+
+                    )}
+
+                  </div>
+
+                </div>
+
+              ))}
+
+              {/* ================= LOADING ================= */}
+
+              {loading && (
+
+                <div className="agc-message agc-assistant-message">
+
+                  <div className="agc-message-avatar">
+                    <Sprout size={23} />
+                  </div>
+
+                  <div className="agc-message-body">
+
+                    <div className="agc-message-role">
+                      AgriMind Assistant
+                    </div>
+
+                    <div className="agc-thinking">
+
+                      <div className="agc-typing">
+
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                      </div>
+
+                      <small>Thinking...</small>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              )}
+
+            </div>
+
+          )}
+
+        </div>
+
+        {/* ================= INPUT SECTION ================= */}
+
+        <div className="agc-composer">
+
+          <div className="agc-composer-inner">
+
+            {error && (
+
+              <div className="agc-error" role="alert">
+
+                <AlertCircle size={19} />
+
+                <p>{error}</p>
+
+                <button
+                  type="button"
+                  onClick={() => setError("")}
+                  aria-label="Dismiss error"
+                >
+                  <X size={18} />
+                </button>
+
+              </div>
+
+            )}
+
+            <form
+              className="agc-input-form"
+              onSubmit={handleSend}
+            >
+
+              <textarea
+                ref={inputRef}
+                rows={1}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask anything about agriculture..."
+                aria-label="Your agriculture question"
+                disabled={loading}
+              />
+
+              <div className="agc-input-toolbar">
+
+                <div className="agc-input-label">
+
+                  <Sparkles size={16} />
+
+                  <span>Agriculture AI</span>
+
+                </div>
+
+                <div className="agc-send-area">
+
+                  <small>Enter to send</small>
+
+                  <button
+                    type="submit"
+                    className="agc-send-button"
+                    disabled={loading || !input.trim()}
+                    aria-label="Send message"
+                  >
+
+                    {loading ? (
+
+                      <span className="agc-spinner"></span>
+
+                    ) : (
+
+                      <ArrowUp size={23} />
+
+                    )}
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            </form>
+
+            <p className="agc-disclaimer">
+
+              AgriMind AI can make mistakes. Verify important
+              farming decisions with a local agricultural expert.
+
+            </p>
+
+          </div>
+
+        </div>
+
+      </main>
+
     </div>
+
   );
+
 }
