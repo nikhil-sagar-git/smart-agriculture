@@ -563,32 +563,7 @@ export default function Dashboard() {
 
           {/* ================= AI ASSISTANT BANNER ================= */}
 
-          <section className="agd-ai-banner">
-
-            <div className="agd-ai-icon">
-              <Bot size={36} />
-            </div>
-
-            <div className="agd-ai-text">
-
-              <h3>Need help with farming decisions?</h3>
-
-              <p>
-                Ask our AI Agriculture Assistant about crops,
-                soil health, fertilizers, irrigation and more.
-              </p>
-
-            </div>
-
-            <Link to="/chatbot" className="agd-ai-button">
-
-              Start Conversation
-
-              <ArrowRight size={18} />
-
-            </Link>
-
-          </section>
+          
 
           {/* Footer */}
 
